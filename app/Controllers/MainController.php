@@ -14,12 +14,14 @@ class MainController extends ResourceController
     private $courses;
     private $stationCourses;
     private $stations;
+    private $users;
 
     public function __construct()
     {
         $this->courses = new \App\Models\CoursesModel;
         $this->stationCourses = new \App\Models\StationCoursesModel;
         $this->stations = new \App\Models\StationsModel;
+        $this->users = new \App\Models\UserModel;
     }
 
     public function getCourses()
@@ -125,6 +127,13 @@ class MainController extends ResourceController
         // Fetch all stations
         $stations = $this->stations->findAll();
         return $this->respond($stations);
+    }
+
+    public function getUsers()
+    {
+        // Fetch all stations
+        $users = $this->users->findAll();
+        return $this->respond($users);
     }
 
 }
