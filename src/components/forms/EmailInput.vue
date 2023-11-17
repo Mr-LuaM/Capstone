@@ -1,17 +1,16 @@
 <template>
-  <div :class="labelClass">
-    {{ divLabel }}
-  </div>
   <v-text-field
+    ref="emailField"
     v-model="email"
     :label="customLabel"
-    :rules="emailRules"
+    :rules="computedEmailRules"
     :variant="customVariant"
     :placeholder="customPlaceholder"
     :density="customDensity"
     :append-inner-icon="appendInnerIcon"
     @blur="updateValue"
-    ><template v-slot:append>
+  >
+    <template v-if="showTooltip" v-slot:append>
       <v-tooltip location="bottom">
         <template v-slot:activator="{ props }">
           <v-icon color="error" v-bind="props" icon="mdi-information"></v-icon>
@@ -20,8 +19,8 @@
         online application will be sent to this email address. Only one (1)
         application per email address is allowed. **
       </v-tooltip>
-    </template></v-text-field
-  >
+    </template>
+  </v-text-field>
 </template>
 
 <script>
@@ -29,7 +28,10 @@ export default {
   props: {
     modelValue: {
       type: String,
-      default: "",
+    },
+    showTooltip: {
+      type: Boolean,
+      default: true,
     },
     divLabel: {
       type: String,
@@ -37,11 +39,9 @@ export default {
     },
     customLabel: {
       type: String,
-      default: "",
     },
     customPlaceholder: {
       type: String,
-      default: "Enter Email Address",
     },
     customDensity: {
       type: String,
@@ -55,29 +55,29 @@ export default {
       type: String,
       default: "mdi-email",
     },
-    labelClass: {
-      type: String,
-      default: "text-subtitle-1 text-medium-emphasis",
+    emailRules: {
+      type: Array,
+      default: () => [],
     },
   },
   data() {
     return {
-      email: this.modelValue,
+      email: this.modelValue || "",
     };
   },
   computed: {
-    emailRules() {
+    computedEmailRules() {
+      // Include default rules and any additional rules passed via props
       return [
+        ...this.emailRules,
         (v) => !!v || "Email is required",
-        (v) =>
-          /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/.test(v) ||
-          "Invalid email address",
+        (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) || "Invalid email address",
       ];
     },
   },
   watch: {
     modelValue(newVal) {
-      this.email = newVal;
+      this.email = newVal || "";
     },
   },
   methods: {

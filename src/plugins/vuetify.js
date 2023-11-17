@@ -25,8 +25,8 @@ const dark = {
 const light = {
   dark: false,
   colors: {
-    background: "#FFFFFF", // White background
-    surface: "#F5F5F5", // Light surface color
+    background: "#F5F5F5", // White background
+    surface: "#FFFFFF", // Light surface color
     primary: "#003366", // PNP Blue
     "primary-darken-1": "#001F4C", // Darkened PNP Blue
     secondary: "#C8102E", // PNP Red
