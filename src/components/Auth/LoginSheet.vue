@@ -79,8 +79,14 @@
               customDensity="default"
               customVariant="outlined"
               customLabel="Password"
-              :showTooltip="false"
+              customHint=""
+              customPersistentHint="false"
               customPlaceholder=""
+              :includeUppercase="false"
+              :includeLowercase="false"
+              :includeDigit="false"
+              :includeSpecialChar="false"
+              :error-messages="passwordError"
             />
           </v-form>
 
@@ -109,7 +115,12 @@
         >
           Next
         </v-btn>
-        <v-btn v-if="step === 2" color="primary" variant="flat" @click="Submit">
+        <v-btn
+          v-if="step === 2"
+          color="primary"
+          variant="outlined"
+          @click="submit"
+        >
           Next
         </v-btn>
       </v-card-actions>
@@ -136,6 +147,8 @@
 </template>
 <script>
 import axios from "axios";
+import jwt_decode from "jsonwebtoken";
+
 export default {
   data: () => ({
     step: 1,
@@ -143,6 +156,7 @@ export default {
     email: "",
     password: "",
     emailError: null,
+    passwordError: null,
   }),
   methods: {
     async checkEmail() {
@@ -177,18 +191,43 @@ export default {
           formData.append("Password", this.password);
 
           // Make the Axios POST request
-          const response = await axios.post("checkEmail", formData);
+          const response = await axios.post("login", formData);
 
-          if (response.data.success === true) {
-            this.emailError = null;
-            this.step++;
+          if (response.data.token) {
+            // Assuming your backend returns the JWT token
+            const token = response.data.token;
+
+            // Add some console logs for debugging
+            console.log("Received JWT token:", token);
+
+            // Decode the token using jwt_decode
+            const decodedToken = jwt_decode(token);
+            console.log("Decoded JWT token:", decodedToken);
+
+            // Extract user role from the decoded token
+            const userRole = decodedToken.role;
+
+            // Redirect the user based on their role
+            this.redirectBasedOnRole(userRole);
           } else {
-            this.emailError = "Email not found";
+            this.passwordError = "Wrong Password";
           }
         } catch (error) {
+          this.passwordError = "Wrong Password";
           console.error(error);
         }
       }
+    },
+    redirectBasedOnRole(role) {
+      // Define your routes or paths based on roles
+      const roleRoutes = {
+        admin: "/admin-dashboard",
+        user: "/user-dashboard",
+        // Add more roles and corresponding routes as needed
+      };
+
+      // Use the Vue Router to navigate to the appropriate route
+      this.$router.push({ path: roleRoutes[role] || "/" });
     },
   },
 };

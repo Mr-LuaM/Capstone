@@ -1,5 +1,6 @@
 import { createApp } from "vue";
 import App from "./App.vue";
+import store from "./store"; // Import your Vuex store
 import router from "./router";
 import vuetify from "./plugins/vuetify";
 import { loadFonts } from "./plugins/webfontloader";
@@ -69,4 +70,4 @@ app.component("warning", warning);
 app.component("success", success);
 app.component("confirmationModal", confirmationModal);
 
-app.use(router).use(vuetify).mount("#app");
+app.use(store).use(router).use(vuetify).mount("#app");

@@ -1,7 +1,4 @@
 <template>
-  <div :class="labelClass">
-    {{ divLabel }}
-  </div>
   <v-text-field
     @click:append-inner="visible = !visible"
     :append-inner-icon="visible ? 'mdi-eye-off' : 'mdi-eye'"
@@ -14,7 +11,8 @@
     :density="customDensity"
     :persistent-placeholder="customPersistentHint"
     :hint="customHint"
-    @blur="updateValue"
+    :error-messages="passwordError"
+    @input="updateValue"
   >
   </v-text-field>
 </template>
@@ -59,6 +57,26 @@ export default {
       default:
         "Password must be at least 8 characters with a combination of 1 uppercase, 1 lowercase, 1 digit, and 1 special character.",
     },
+    includeUppercase: {
+      type: Boolean,
+      default: true,
+    },
+    includeLowercase: {
+      type: Boolean,
+      default: true,
+    },
+    includeDigit: {
+      type: Boolean,
+      default: true,
+    },
+    includeSpecialChar: {
+      type: Boolean,
+      default: true,
+    },
+    passwordError: {
+      type: String,
+      default: " ",
+    },
   },
   data() {
     return {
@@ -68,14 +86,30 @@ export default {
   },
   computed: {
     passwordRules() {
-      return [
-        (v) => !!v || "Password is required",
-        (v) =>
-          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(
-            v
-          ) ||
-          "Password must be at least 8 characters with a combination of 1 uppercase, 1 lowercase, 1 digit, and 1 special character.",
-      ];
+      // Define predefined rules
+      const rules = [(v) => !!v || "Password is required"];
+
+      // Include additional rules based on props
+      if (this.includeUppercase) {
+        rules.push(
+          (v) => /[A-Z]/.test(v) || "Include at least 1 uppercase character"
+        );
+      }
+      if (this.includeLowercase) {
+        rules.push(
+          (v) => /[a-z]/.test(v) || "Include at least 1 lowercase character"
+        );
+      }
+      if (this.includeDigit) {
+        rules.push((v) => /\d/.test(v) || "Include at least 1 digit");
+      }
+      if (this.includeSpecialChar) {
+        rules.push(
+          (v) => /[@$!%*?&]/.test(v) || "Include at least 1 special character"
+        );
+      }
+
+      return rules;
     },
   },
   watch: {
