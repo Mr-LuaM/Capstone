@@ -74,13 +74,19 @@
           </div>
           <v-form ref="form" @submit.prevent="submit">
             <PasswordInput
-              v-model="password"
               divLabel=""
+              v-model="password"
               customDensity="default"
               customVariant="outlined"
               customLabel="Password"
               :showTooltip="false"
               customPlaceholder=""
+              customHint=""
+              :includeUppercase="false"
+              :includeLowercase="false"
+              :includeDigit="false"
+              :includeSpecialChar="false"
+              :error-messages="passwordError"
             />
           </v-form>
 
@@ -109,7 +115,7 @@
         >
           Next
         </v-btn>
-        <v-btn v-if="step === 2" color="primary" variant="flat" @click="Submit">
+        <v-btn v-if="step === 2" color="primary" variant="flat" @click="submit">
           Next
         </v-btn>
       </v-card-actions>
@@ -143,6 +149,7 @@ export default {
     email: "",
     password: "",
     emailError: null,
+    passwordError: null,
   }),
   methods: {
     async checkEmail() {
@@ -167,6 +174,29 @@ export default {
         }
       }
     },
+    setAuthHeader(token) {
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    },
+
+    handleUserRole(role) {
+      const router = useRouter();
+      console.log("Role received:", role);
+
+      switch (role) {
+        case 1:
+          console.log("Redirecting to /admin-dashboard");
+          router.push("/admin-dashboard");
+          break;
+        case 2:
+          console.log("Redirecting to /user-dashboard");
+          router.push("/user-dashboard");
+          break;
+        default:
+          console.log("Redirecting to /hi");
+          router.push("/hi");
+      }
+    },
+
     async submit() {
       const { valid } = await this.$refs.form.validate();
 
@@ -176,16 +206,22 @@ export default {
           formData.append("Email", this.email);
           formData.append("Password", this.password);
 
-          // Make the Axios POST request
-          const response = await axios.post("checkEmail", formData);
+          const response = await axios.post("login", formData);
 
-          if (response.data.success === true) {
-            this.emailError = null;
-            this.step++;
+          if (response.data.token) {
+            const token = response.data.token;
+
+            localStorage.setItem("jwt_token", token);
+            this.setAuthHeader(token);
+
+            const decodedToken = jwt_decode(token);
+
+            this.handleUserRole(decodedToken.role);
           } else {
-            this.emailError = "Email not found";
+            this.passwordError = "error";
           }
         } catch (error) {
+          this.passwordError = "Wrong Password";
           console.error(error);
         }
       }

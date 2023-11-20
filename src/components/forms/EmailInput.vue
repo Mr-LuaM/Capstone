@@ -8,7 +8,7 @@
     :placeholder="customPlaceholder"
     :density="customDensity"
     :append-inner-icon="appendInnerIcon"
-    @blur="updateValue"
+    @input="updateValue"
   >
     <template v-if="showTooltip" v-slot:append>
       <v-tooltip location="bottom">
