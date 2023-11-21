@@ -324,6 +324,9 @@
                               <Address v-model="address" divLabel="Address" />
                             </v-col>
                             <v-col cols="12" sm="4">
+                              <div class="text-subtitle-1 text-medium-emphasis">
+                                Email
+                              </div>
                               <EmailInput v-model="email" />
                             </v-col>
                             <v-col cols="12" sm="4">
@@ -493,10 +496,14 @@
               ></v-alert>
               <v-row>
                 <v-col cols="12" sm="4">
+                  <div class="text-subtitle-1 text-medium-emphasis">Email</div>
                   <EmailInput v-model="email" />
                 </v-col>
 
                 <v-col cols="12" sm="4">
+                  <div class="text-subtitle-1 text-medium-emphasis">
+                    Password
+                  </div>
                   <PasswordInput v-model="password" />
                 </v-col>
                 <v-col cols="12" sm="4">

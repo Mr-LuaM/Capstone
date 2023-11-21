@@ -1,7 +1,4 @@
 <template>
-  <div :class="labelClass">
-    {{ divLabel }}
-  </div>
   <v-text-field
     @click:append-inner="visible = !visible"
     :append-inner-icon="visible ? 'mdi-eye-off' : 'mdi-eye'"

@@ -116,7 +116,7 @@
           Next
         </v-btn>
         <v-btn v-if="step === 2" color="primary" variant="flat" @click="submit">
-          Next
+          Login
         </v-btn>
       </v-card-actions>
     </v-sheet>
@@ -141,6 +141,7 @@
   </v-container>
 </template>
 <script>
+import { jwtDecode as jwt_decode } from "jwt-decode";
 import axios from "axios";
 export default {
   data: () => ({
@@ -174,26 +175,41 @@ export default {
         }
       }
     },
-    setAuthHeader(token) {
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-    },
-
     handleUserRole(role) {
-      const router = useRouter();
-      console.log("Role received:", role);
+      const router = this.$router; // Access router directly
 
-      switch (role) {
-        case 1:
-          console.log("Redirecting to /admin-dashboard");
-          router.push("/admin-dashboard");
-          break;
-        case 2:
-          console.log("Redirecting to /user-dashboard");
-          router.push("/user-dashboard");
-          break;
-        default:
-          console.log("Redirecting to /hi");
-          router.push("/hi");
+      if (router) {
+        console.log("Role received:", role);
+
+        switch (role) {
+          case "1":
+            console.log("Redirecting to /admin-dashboard");
+            router.push("/admin/applicants");
+            break;
+          case "6":
+            console.log("Redirecting to /applicant-dashboard");
+            router.push("/applicant-dashboard");
+            break;
+          case "2":
+            console.log("Redirecting to /main-admin-dashboard");
+            router.push("/main-admin-dashboard");
+            break;
+          case "3":
+            console.log("Redirecting to /station-admin-dashboard");
+            router.push("/station-admin-dashboard");
+            break;
+          case "5":
+            console.log("Redirecting to /student-dashboard");
+            router.push("/admin/applicants");
+            break;
+          case "4":
+            console.log("Redirecting to /teacher-dashboard");
+            router.push("/teacher-dashboard");
+            break;
+          default:
+            console.log("Redirecting to /hi");
+            router.push("/hi");
+        }
       }
     },
 
@@ -212,9 +228,10 @@ export default {
             const token = response.data.token;
 
             localStorage.setItem("jwt_token", token);
-            this.setAuthHeader(token);
 
+            // Use jwt_decode alias to decode the token
             const decodedToken = jwt_decode(token);
+            console.log(decodedToken);
 
             this.handleUserRole(decodedToken.role);
           } else {

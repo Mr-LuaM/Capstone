@@ -47,7 +47,7 @@
         </v-list>
         <template v-slot:append>
           <div class="pa-2">
-            <v-btn block> Logout </v-btn>
+            <v-btn @click="logout" block>Logout</v-btn>
           </div>
         </template>
       </v-navigation-drawer>
@@ -72,6 +72,14 @@ export default {
   methods: {
     toggleSidebar() {
       this.sidebarOpen = !this.sidebarOpen;
+    },
+    logout() {
+      // Perform logout actions here
+      // For example, clear the token from localStorage
+      localStorage.removeItem("jwt_token");
+
+      // Redirect to the login page and clear navigation history
+      this.$router.push({ path: "/login" }).catch(() => {});
     },
   },
 };
