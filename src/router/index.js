@@ -53,6 +53,18 @@ const routes = [
       },
     ],
   },
+  {
+    path: "/student/home",
+    name: "studentHome",
+    component: Solo,
+
+    children: [
+      {
+        path: "",
+        component: () => import("../views/Student/Home.vue"),
+      },
+    ],
+  },
 ];
 
 const router = createRouter({
