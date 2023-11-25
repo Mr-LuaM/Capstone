@@ -102,7 +102,7 @@
        
           </v-btn>
 
-          <v-btn  density="compact"  size="x-large" @click="dialog2 = true" color="success" variant="plain" icon="mdi-content-save" >
+          <v-btn  density="compact"  size="x-large" @click="quickapprove(item)" color="success" variant="plain" icon="mdi-content-save" >
            
           </v-btn>
 
@@ -160,7 +160,7 @@
         >
           Archive
         </v-btn>
-        <v-btn color="green darken-1" text @click="quickapprove(item)">
+        <v-btn color="green darken-1" text @click="">
           Approve
         </v-btn>
       </v-card-actions>
@@ -443,7 +443,7 @@ export default {
           }
         } catch (error) {
           console.log(error);
-          this.$refs.snackbar.openSnackbar("Error message!", "error");
+          this.$refs.snackbar.openSnackbar("Error message11!", "error");
         }
       }
     },
@@ -565,6 +565,7 @@ export default {
       if (this.selectedApplicant) {
         // Create an object with the selected applicant's details
         return {
+          id:this.selectedApplicant.id,
           lastName: this.selectedApplicant.Last_Name,
           firstName: this.selectedApplicant.First_Name,
           middleName: this.selectedApplicant.Middle_Name,
@@ -590,6 +591,7 @@ export default {
         };
       }
       return {
+        id: 1,
         lastName: "lastName",
         firstName: "firstName",
         middleName: "middleName",
