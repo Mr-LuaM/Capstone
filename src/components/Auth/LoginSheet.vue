@@ -1,12 +1,20 @@
 <template>
   <v-container>
-    <v-sheet
+    <v-card
       class="mx-auto align-self-center pa-10"
       min-width="500"
       max-width="500"
       border
       rounded
+  
     >
+    <v-progress-linear
+        :active="loading"
+        :indeterminate="loading"
+        absolute
+        bottom
+        color="secondary"
+      ></v-progress-linear>
       <div class="text-center mb-6">
         <span
           class="text-primary font-weight-meduim d-flex align-center justify-center"
@@ -119,7 +127,7 @@
           Login
         </v-btn>
       </v-card-actions>
-    </v-sheet>
+    </v-card>
     <v-row align="center" justify="center">
       <div class="d-flex justify-space-between mt-6">
         <v-btn class="text-none letter-spacing-0" variant="text">
@@ -151,30 +159,52 @@ export default {
     password: "",
     emailError: null,
     passwordError: null,
+    loading: false,
   }),
   methods: {
     async checkEmail() {
-      const { valid } = await this.$refs.checkEmail.validate();
+  // Set loading to true before making the request
+  
 
-      if (valid) {
-        try {
-          const formData = new FormData();
-          formData.append("Email", this.email);
+  const { valid } = await this.$refs.checkEmail.validate();
 
-          // Make the Axios POST request
-          const response = await axios.post("checkEmail", formData);
+  if (valid) {
+    try {
+      const formData = new FormData();
+      formData.append("Email", this.email);
 
-          if (response.data.success === true) {
-            this.emailError = null;
-            this.step++;
-          } else {
-            this.emailError = "Email not found";
-          }
-        } catch (error) {
-          console.error(error);
-        }
+      // Make the Axios POST request
+      const response = await axios.post("checkEmail", formData);
+
+      if (response.data.success === true) {
+        this.loading=true;
+        // After receiving a successful response, wait for 3 seconds
+        setTimeout(() => {
+          // Update the loading state to false and increment the step
+         
+          this.emailError = null;
+          this.step++;
+          this.loading = false;
+        }, 2000);
+      } else {
+        this.emailError = "Email not found";
+
+        // If the response is not successful, wait for a shorter time before setting loading to false
+        setTimeout(() => {
+          this.loading = false;
+        }, 100);
       }
-    },
+    } catch (error) {
+      console.error(error);
+    } finally {
+      // Set loading to false after the request is completed
+      setTimeout(() => {
+        this.loading = false;
+      }, 2000);
+    }
+  }
+},
+
     handleUserRole(role) {
       const router = this.$router; // Access router directly
 
@@ -218,6 +248,8 @@ export default {
 
       if (valid) {
         try {
+          this.loading=true;
+        
           const formData = new FormData();
           formData.append("Email", this.email);
           formData.append("Password", this.password);
@@ -232,8 +264,9 @@ export default {
             // Use jwt_decode alias to decode the token
             const decodedToken = jwt_decode(token);
             console.log(decodedToken);
-
+            setTimeout(() => {
             this.handleUserRole(decodedToken.role);
+          }, 2000);
           } else {
             this.passwordError = "error";
           }

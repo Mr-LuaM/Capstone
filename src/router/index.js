@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import { jwtDecode as jwt_decode } from "jwt-decode";
 import Solo from "../layouts/Solo";
 import Main from "../layouts/Main";
+import StudNav from "../layouts/StudNav";
 import HomeView from "../views/HomeView.vue";
 
 const routes = [
@@ -13,6 +14,11 @@ const routes = [
   {
     path: "/login",
     name: "login",
+    component: HomeView,
+  },
+  {
+    path: "/auth/verify/:verificationCode",
+    name: "verify-account",
     component: HomeView,
   },
   {
@@ -56,7 +62,7 @@ const routes = [
   {
     path: "/student/home",
     name: "studentHome",
-    component: Solo,
+    component: StudNav,
 
     children: [
       {

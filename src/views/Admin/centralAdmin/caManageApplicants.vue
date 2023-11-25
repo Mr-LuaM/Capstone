@@ -1,7 +1,7 @@
 <template>
-  <v-container fluid class="rounded-lg">
+  <v-container fluid class="rounded-lg bg-surface">
     <v-card flat>
-      <v-card-title class="d-flex align-center pe-2 bg-primary-darken-1">
+      <v-card-title class="d-flex align-center pe-2 bg-secondary">
         <v-icon icon="mdi-account"></v-icon> &nbsp; Review Applicant
 
         <v-spacer></v-spacer>

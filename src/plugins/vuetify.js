@@ -9,16 +9,16 @@ import * as labsComponents from "vuetify/labs/components";
 const dark = {
   dark: true,
   colors: {
-    background: "#1E1E1E", // Dark background color
-    surface: "#333333", // Slightly lighter surface color
-    primary: "#3399CC", // Lighter blue for better visibility in dark mode
-    "primary-darken-1": "#001F4C", // Darkened PNP Blue
-    secondary: "#C8102E", // PNP Red
-    "secondary-darken-1": "#7F0914", // Darkened PNP Red
-    error: "#B00020", // Standard error color
+    background: "#121212", // Darker background color
+    surface: "#1E1E1E", // Dark surface color
+    primary: "#EF5350", // PNP Red as the primary color
+    "primary-darken-1": "#C8102E", // Darkened PNP Red
+    secondary: "#1976D2", // ONP Blue as the secondary color
+    "secondary-darken-1": "#003366", // Darkened ONP Blue
+    error: "#FF5252", // Lighter error color
     info: "#2196F3", // Standard info color
-    success: "#4CAF50", // Standard success color
-    warning: "#FB8C00", // Standard warning color
+    success: "#66BB6A", // Lighter success color
+    warning: "#FFB74D", // Lighter warning color
   },
 };
 
@@ -27,10 +27,10 @@ const light = {
   colors: {
     background: "#F5F5F5", // White background
     surface: "#FFFFFF", // Light surface color
-    primary: "#003366", // PNP Blue
-    "primary-darken-1": "#001F4C", // Darkened PNP Blue
-    secondary: "#C8102E", // PNP Red
-    "secondary-darken-1": "#7F0914", // Darkened PNP Red
+    primary: "#EF5350", // PNP Red as the primary color
+    "primary-darken-1": "#C8102E", // Darkened PNP Red
+    secondary: "#1976D2", // ONP Blue as the secondary color
+    "secondary-darken-1": "#003366", // Darkened ONP Blue
     error: "#B00020", // Standard error color
     info: "#2196F3", // Standard info color
     success: "#4CAF50", // Standard success color
@@ -44,7 +44,7 @@ export default createVuetify({
     ...labsComponents,
   },
   icons: {
-    defaultSet: "mdi", // Set the default icon set to 'mdi' (Material Design Icons)
+    defaultSet: "mdi",
   },
   theme: {
     themes: {
