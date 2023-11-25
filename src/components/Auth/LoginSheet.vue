@@ -187,7 +187,7 @@ export default {
           this.loading = false;
         }, 2000);
       } else {
-        this.emailError = "Email not found";
+        this.emailError = response.data.error || "Email not found";
 
         // If the response is not successful, wait for a shorter time before setting loading to false
         setTimeout(() => {
@@ -244,38 +244,53 @@ export default {
     },
 
     async submit() {
-      const { valid } = await this.$refs.form.validate();
+    const { valid } = await this.$refs.form.validate();
 
-      if (valid) {
+    if (valid) {
         try {
-          this.loading=true;
-        
-          const formData = new FormData();
-          formData.append("Email", this.email);
-          formData.append("Password", this.password);
+            this.loading = true;
 
-          const response = await axios.post("login", formData);
+            const formData = new FormData();
+            formData.append("Email", this.email);
+            formData.append("Password", this.password);
 
-          if (response.data.token) {
-            const token = response.data.token;
+            const response = await axios.post("login", formData);
 
-            localStorage.setItem("jwt_token", token);
+            if (response.data.token) {
+                const token = response.data.token;
 
-            // Use jwt_decode alias to decode the token
-            const decodedToken = jwt_decode(token);
-            console.log(decodedToken);
-            setTimeout(() => {
-            this.handleUserRole(decodedToken.role);
-          }, 2000);
-          } else {
-            this.passwordError = "error";
-          }
+                localStorage.setItem("jwt_token", token);
+
+                // Use jwt_decode alias to decode the token
+                const decodedToken = jwt_decode(token);
+                console.log(decodedToken);
+
+                // If you have a specific reason for delaying execution, keep it; otherwise, remove this setTimeout
+                setTimeout(() => {
+                    this.handleUserRole(decodedToken.role);
+                }, 2000);
+            } else {
+                // Display the error message returned from the server
+                this.passwordError = response.data.error;
+            }
         } catch (error) {
-          this.passwordError = "Wrong Password";
-          console.error(error);
+            if (error.response) {
+                console.error("Server Error:", error.response.data);
+                // Display the error message returned from the server
+                this.passwordError = error.response.data.error || "Server error. Please try again later.";
+            } else if (error.request) {
+                console.error("Network Error:", error.request);
+                this.passwordError = "Network error. Please check your connection.";
+            } else {
+                console.error("Error:", error.message);
+                this.passwordError = "An unexpected error occurred.";
+            }
+        } finally {
+            this.loading = false;
         }
-      }
-    },
-  },
-};
+    }
+},
+
+}
+}
 </script>

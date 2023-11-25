@@ -97,23 +97,24 @@
             </v-chip>
           </div>
         </template>
-        <template v-slot:item.actions="{ item }">
-          <v-btn small @click="showDetails(item)" color="primary" rounded tile>
-            <v-icon>mdi-eye</v-icon>
+        <template v-slot:item.actions="{ item }" >
+          <v-btn  density="compact"  size="x-large" @click="showDetails(item)" color="secondary" variant="plain" icon="mdi-eye">
+       
           </v-btn>
 
-          <v-btn small @click="dialog2 = true" color="success" rounded tile>
-            <v-icon>mdi-content-save</v-icon>
+          <v-btn  density="compact"  size="x-large" @click="dialog2 = true" color="success" variant="plain" icon="mdi-content-save" >
+           
           </v-btn>
 
           <v-btn
-            small
+             density="compact"  size="x-large"
             @click="openConfirmDialog(item.id)"
-            color="secondary"
-            rounded
-            tile
+            color="primary"
+            variant="plain"
+            icon="mdi-archive"
+           
           >
-            <v-icon>mdi-archive</v-icon>
+          
           </v-btn>
         </template>
       </v-data-table>
@@ -324,7 +325,7 @@ export default {
           title: "Actions",
           key: "actions",
           sortable: false,
-          width: "250px",
+          width: "190px",
         },
         { title: "Status", key: "Status" },
         { title: "IMG", key: "Selected_File1" },
@@ -454,7 +455,7 @@ export default {
       return baseUrl + imagePath;
     },
     getColor(status) {
-      if (status === "pending") return "secondary";
+      if (status === "pending") return "warning";
       else if (status === "approved") return "success";
       else if (status === "rejected") return "error";
       else return "primary";
