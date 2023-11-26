@@ -67,6 +67,7 @@
         :item-value="(item) => `${item.name}-${item.id}`"
         class="elevation-1"
         return-object
+
       >
         <template v-slot:item.Selected_File1="{ value }">
           <v-card class="my-2" elevation="2" rounded>
