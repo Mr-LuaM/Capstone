@@ -70,11 +70,6 @@ variant="plain"
     <!-- Edit Station Modal -->
     
     <v-dialog v-model="dialog" persistent width="800">
-  <template v-slot:activator="{ props }">
-    <v-btn color="primary" v-bind="props">
-      Open Dialog
-    </v-btn>
-  </template>
   <v-card>
     <v-card-title>
       <span class="text-h5">Edit Station</span>
@@ -130,6 +125,7 @@ variant="plain"
     </v-col>
   </v-row>
 </v-form>
+
 </v-container>
 
 
@@ -146,6 +142,7 @@ variant="plain"
       </v-btn>
     </v-card-actions>
   </v-card>
+  
 </v-dialog>
 
   </v-container>
@@ -194,11 +191,13 @@ export default {
       // Close the edit modal
       this.dialog = false;
     },
-    saveStationChanges() {
-    console.log("Edited Station:", this.editedStation);
-
-    // Perform other logic...
-  },
+    // async saveStationChanges() {
+    //   try {
+    //     const formData = new FormData();
+    //     formData.append("lastName", this.lastName);
+    //     formData.append("firstName", this.firstName);
+    //     formData.append("middleName", this.middleName);
+  //},
   },
 };
 </script>
