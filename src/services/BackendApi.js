@@ -1,24 +1,30 @@
 import axios from "axios";
 
-export async function getCourses() {
+export async function getCourses(coursestatus = 'all',) {
   try {
-    const courses = await axios.get("getCourses");
+    const url = status === 'all' ? 'getCourses' : `getCourses?status=${status}`;
+    console.log(url);
+    const courses = await axios.get(url);
     return courses.data; // Return the data
   } catch (error) {
-    console.log(error);
+    console.error(error);
     throw error; // Rethrow the error
   }
 }
 
-export async function getStations() {
+export async function getStations(status = 'all') {
   try {
-    const stations = await axios.get("getStations");
+    // Use a dynamic URL based on the provided status parameter
+    const url = status === 'all' ? 'getStations' : `getStations?status=${status}`;
+    
+    const stations = await axios.get(url);
     return stations.data; // Return the data
   } catch (error) {
     console.log(error);
     throw error; // Rethrow the error
   }
 }
+
 export async function getStation() {
   try {
     const station = await axios.get("getStation");

@@ -922,7 +922,7 @@ export default {
     },
     async getCourses() {
       try {
-        this.courses = await getCourses();
+        this.courses = await getCourses('active');
       } catch (error) {
         console.log(error);
       }

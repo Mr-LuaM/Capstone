@@ -3,7 +3,7 @@
     <v-text-field
       :label="customLabel"
       :required="isRequired"
-      v-model="modelValue"
+      v-model="internalValue"
       :variant="customVariant"
       :density="customDensity"
       :rules="textRules"
@@ -36,9 +36,9 @@
       },
     },
     data() {
-        return {
-            modelValue: this.modelValue,
-        }
+      return {
+        internalValue: this.modelValue,
+      };
     },
     computed: {
       textRules() {
@@ -50,17 +50,19 @@
         return rules;
       },
     },
-    
     watch: {
-    modelValue(newVal) {
-      this.modelValue = newVal;
+      modelValue(newVal) {
+        this.internalValue = newVal;
+      },
+      internalValue(newVal) {
+        this.$emit("update:modelValue", newVal);
+      },
     },
-  },
-  methods: {
-    updateValue() {
-      this.$emit("update:modelValue", this.modelValue);
+    methods: {
+      updateValue() {
+        this.$emit("update:modelValue", this.internalValue);
+      },
     },
-  },
   };
   </script>
   

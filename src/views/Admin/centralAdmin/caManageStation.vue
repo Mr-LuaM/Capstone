@@ -66,7 +66,7 @@
     show-select
     v-model="selected"
     return-object
-    density="comfortable"
+ 
     hover="primary"
     show-expand
   >
@@ -89,15 +89,29 @@
         <th class="text-left">
           Credits
         </th>
+        <th class="text-left">
+          Status
+        </th>
+        <!-- <th class="text-left">
+          Created
+        </th>
+        <th class="text-left">
+          Last Update
+        </th> -->
 
       </tr>
     </thead>
     <tbody>
       <tr v-for="course in item.Courses_Offered" :key="course.Course_ID">
-                <td>{{ course.Course_Name }}</td>
-                <td>{{ course.Course_Description }}</td>
-                <td>{{ course.Duration }}</td>
-                <td>{{ course.Credits }}</td>
+                <td class="text-left" >{{ course.Course_Name }}</td>
+                <td class="text-left">{{ course.Course_Description }}</td>
+                <td class="text-left">{{ course.Duration }}</td>
+                <td class="text-left">{{ course.Credits }}</td>
+                <td class="text-left" >     <v-chip :color="course.status === 'active' ? 'success' : 'error'" size="small" label>
+            {{ course.status }}
+          </v-chip></td>
+                <!-- <td class="text-left">{{ course.created_at }}</td>
+                <td class="text-left">{{ course.status_updated_at }}</td> -->
               </tr>
     </tbody>
     
@@ -116,16 +130,17 @@
           </v-btn>
 
           <v-btn
-            size="x-large"
-            @click="openConfirmDialog(item.Station_ID)"
-            color="primary"
-            density="compact"
-            icon="mdi-delete"
-variant="plain"
-        
-          >
+  size="x-large"
+  @click="openConfirmDialog(item.Station_ID)"
+  :color="item.status === 'inactive' ? 'success' : 'error'"
+  density="compact"
+  icon="mdi-swap-horizontal-circle-outline"
+  variant="plain"
+>
+</v-btn>
+
     
-          </v-btn>
+    
         </template>
       </v-data-table>
     </v-card>
@@ -139,14 +154,14 @@ variant="plain"
       </v-card-title>
       <v-card-text>
         <v-container>
-          <v-form ref="form" @submit.prevent="saveAction">
+          <v-form ref="form" @submit.prevent="submit">
             <v-row justify="center" align="center">
               <!-- Left side - Forms -->
               <v-col cols="12" sm="6" md="4">
                 <GenericTextField
                 customLabel="Station Name*"
                   required
-                  v-model.lazy="editedStation.Station_Name"
+                  v-model="editedStation.Station_Name"
                 />
               </v-col>
 
@@ -155,7 +170,7 @@ variant="plain"
                   divLabel=""
                   v-model="editedStation.Location"
                   customAppendInnerIcon=""
-                  customLabel="Address"
+                  customLabel="Location"
                   customHint=""
                 />
               </v-col>
@@ -214,7 +229,7 @@ variant="plain"
                     </tr>
                   </tbody>
                 </v-table>
-                <p>Course IDs: {{ editedStation.Courses_Offered.map(course => course.Course_ID).join(', ') }}</p>
+                <!-- <p>Course IDs: {{ editedStation.Courses_Offered.map(course => course.Course_ID).join(', ') }}</p> -->
               </v-container>
             </v-row>
           </v-form>
@@ -225,18 +240,24 @@ variant="plain"
         <v-btn color="secondary" variant="plain" @click="closeDialog">
           Close
         </v-btn>
-        <v-btn v-if="isEditing()" variant="text" @click="addStation" color="primary">
-          Add Station
-        </v-btn>
-        <v-btn v-else variant="text" @click="saveStationChanges" color="primary">
-          Save Changes
-        </v-btn>
+        <v-btn v-if="isEditing" variant="text" @click="saveStationChanges" color="primary">
+  Save Changes
+</v-btn>
+<v-btn v-else variant="text" @click="addStation" color="primary">
+  Add Station
+</v-btn>
+
       </v-card-actions>
     </v-card>
   </v-dialog>
 
   </v-container>
   <infoSnack ref="snackbar" />
+  <confirmationModal
+    ref="confirmationModal"
+    @confirm="archiveItem"
+    @cancel="this.$refs.confirmationModal.dialog = false"
+  />ss
 </template>
 
 <script>
@@ -352,7 +373,45 @@ addCourse() {
         Courses_Offered: this.editedStation.Courses_Offered.filter((_, i) => i !== index)
     };
 },
-  
+async addStation() {
+  const { valid } = await this.$refs.form.validate();
+  if (valid) {
+      try {
+        if (this.checkForDuplicates()) {
+        this.$refs.snackbar.openSnackbar("Error: Duplicate course selected", "error");
+        return; // Stop further processing if duplicates are found
+      }
+
+      const formData = new FormData();
+      formData.append("Station_Name", this.editedStation.Station_Name);
+      formData.append("Location", this.editedStation.Location);
+      formData.append("status", this.editedStation.status);
+
+      // Append Courses_Offered data
+      this.editedStation.Courses_Offered.forEach((course, index) => {
+        formData.append(`Courses_Offered[${index}][Course_ID]`, course.Course_ID);
+      });
+
+
+        // Make an HTTP POST request to the backend
+        const response = await axios.post('addStation', formData);
+
+        // Check the response and show a success message or handle errors
+        if (response.data.success === true) {
+          this.$refs.snackbar.openSnackbar(response.data.message, 'success');
+          // Optionally, reset the form or perform other actions after a successful addition
+          this.dialog = false;
+          this.loadData();
+        } else {
+          this.$refs.snackbar.openSnackbar(response.data.message, 'error');
+        }
+      } catch (error) {
+        console.error('Error adding station:', error);
+        // Handle the error and show an error message if needed
+        this.$refs.snackbar.openSnackbar('Error adding station', 'error');
+      }
+    }
+  },
 async saveStationChanges() {
   const { valid } = await this.$refs.form.validate();
   if (valid) {
@@ -394,6 +453,35 @@ async saveStationChanges() {
     }
   }
 },
+openConfirmDialog(id) {
+      // Open the confirm dialog for approving or rejecting an application
+      this.$refs.confirmationModal.dialog = true;
+      this.$refs.confirmationModal.confirmAction = () => this.toggleStatus(id);
+    },
+    async toggleStatus(id)  {
+
+    try {
+      const secureTokenResponse = await axios.get(
+          "generateSecureToken/" + id
+        );
+        const secureToken = secureTokenResponse.data;
+      // Use axios or your preferred HTTP library to send a request to your backend
+      const response = await axios.post("toggleStatus/" + id, { secureToken });
+      if (response.data.success === true) {
+          // Show a success alert or perform other success-related actions here
+          this.$refs.snackbar.openSnackbar(response.data.message, "success");
+          this.$refs.confirmationModal.dialog = false
+          this.loadData();
+        } else {
+          // Show the error Snackbar
+          this.$refs.snackbar.openSnackbar(response.data.message, "error");
+        }
+
+    } catch (error) {
+      console.error('Error inactivating station:', error);
+      // Handle errors as needed
+    }
+  },
 
 },
 computed: {
@@ -419,9 +507,9 @@ computed: {
       return this.isEditing ? 'Edit Station' : 'Add Station';
     },
     isEditing() {
-      // Determine if it's an edit operation based on your logic (e.g., checking if Station_ID exists)
-      return Boolean(this.editedStation.Station_ID);
-    },
+  // Determine if it's an edit operation based on your logic (e.g., checking if Station_ID exists and is not empty)
+  return Boolean(this.editedStation.Station_ID) || this.editedStation.Station_ID === 0; // Check for non-emptiness
+},
   },
 };
 </script>
