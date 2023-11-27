@@ -1,7 +1,7 @@
 <template>
   <v-container fluid class="rounded-lg bg-surface">
     <v-card flat>
-      <v-card-title class="d-flex align-center pe-2 bg-primary-darken-1">
+      <v-card-title class="d-flex align-center pe-2 bg-secondary-darken-1">
         <v-icon icon="mdi-account"></v-icon> &nbsp; Manage Station
 
         <v-spacer></v-spacer>
@@ -30,18 +30,54 @@
 
       <v-divider></v-divider>
 
-      <v-data-table-server
+      <v-data-table
         v-model:search="search"
         :headers="headers"
         :items="stations"
         :item-value="(item) => `${item.Station_Name}-${item.Station_ID}`"
-        class="elevation-1"
+        class="elevation-1 rounded-lg"
         show-select
         v-model="selected"
         return-object
         density="comfortable"
         hover="primary"
+        show-expand
       >
+      
+    <template v-slot:expanded-row="{ columns, item }">
+   <tr><td :colspan="columns.length"> 
+    <v-container class="ml-6 bg-background rounded" >
+      <v-table  density="compact" class="rounded-lg">
+    <thead>
+      <tr >
+        <th class="text-left">
+          Courses Offered
+        </th>
+        <th class="text-left">
+          Course_Description
+        </th>
+        <th class="text-left">
+          Duration
+        </th>
+        <th class="text-left">
+          Credits
+        </th>
+
+      </tr>
+    </thead>
+    <tbody>
+      <tr v-for="course in item.Courses_Offered" :key="course.Course_ID">
+                <td>{{ course.Course_Name }}</td>
+                <td>{{ course.Course_Description }}</td>
+                <td>{{ course.Duration }}</td>
+                <td>{{ course.Credits }}</td>
+              </tr>
+    </tbody>
+    
+  </v-table>
+    </v-container>
+  </td></tr>
+    </template>
       <template v-slot:item.status="{ value }">
           <v-chip :color="getColor(value)" size="small" label>
             {{ value }}
@@ -64,7 +100,7 @@ variant="plain"
     
           </v-btn>
         </template>
-      </v-data-table-server>
+      </v-data-table>
     </v-card>
 
     <!-- Edit Station Modal -->
@@ -114,7 +150,7 @@ variant="plain"
 
 
     <!-- Right side - Image -->
-    <v-col cols="12" sm="6" md="8">
+    <!-- <v-col cols="12" sm="6" md="8">
       <v-img
         src="../../../assets/img/designs/pnp-facade (1).png"
         alt="Image"
@@ -122,7 +158,40 @@ variant="plain"
         aspect-ratio="16/9"
         height="auto"
       ></v-img>
-    </v-col>
+    </v-col> -->
+  </v-row>
+  <v-row justify="center" align="center">
+    <v-container class="bg-background rounded">
+      <v-table density="compact" class="rounded-lg">
+        <thead>
+          <tr>
+            <th class="text-left">Courses Offered</th>
+            <th class="text-right">
+              <v-btn icon @click="addCourse" variant="text" color="success" size="small">
+                <v-icon>mdi-plus</v-icon>
+              </v-btn>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(course, index) in editedStation.Courses_Offered" :key="index">
+            <td class="pt-3">
+              <CourseSelection
+                required
+                v-model="course.Course_Name"
+                variant=""
+                density="compact"
+              />
+            </td>
+            <td class="text-right">
+              <v-btn icon @click="removeCourse(index)" variant="text" color="error" size="small">
+                <v-icon>mdi-minus</v-icon>
+              </v-btn>
+            </td>
+          </tr>
+        </tbody>
+      </v-table>
+    </v-container>
   </v-row>
 </v-form>
 
@@ -134,9 +203,9 @@ variant="plain"
     </v-card-text>
     <v-card-actions>
       <v-spacer></v-spacer>
-      <v-btn color="secondary" variant="plain" @click="dialog = false">
-        Close
-      </v-btn>
+      <v-btn color="secondary" variant="plain" @click="closeDialog">
+    Close
+  </v-btn>
       <v-btn variant="tonal" @click="saveStationChanges" color="primary">
         Save Changes
       </v-btn>
@@ -149,30 +218,33 @@ variant="plain"
 </template>
 
 <script>
-import { getStation } from "../../../services/BackendApi";
+import { getStations } from "../../../services/BackendApi";
 
 export default {
   data() {
     return {
-      search: "",
+      selected: null,
+      search: '',
       stations: [],
       headers: [
-        { title: "Actions", value: "actions", sortable: false, width:'150px',align: 'end'},
-        { title: "Station ID", value: "Station_ID", align: 'end'},
-        { title: "Station Name", value: "Station_Name", align: 'end'},
-        { title: "Location", value: "Location", align: 'end'},
-        { title: "Status", value: "status", align: 'end'},
-        { title: "Created Since", value: "created_at", align: 'end'},
-        { title: "Last Update", value: "status_updated_at", align: 'end'},
+        
+        // { title: "Station ID", value: "Station_ID", align: 'start'},
+        { title: "Station Name", value: "Station_Name", align: 'start',},
+        { title: "Location", value: "Location", align: 'start'},
+        { title: "Status", value: "status", align: 'start'},
+        { title: "Created Since", value: "created_at", align: 'start'},
+        { title: "Last Update", value: "status_updated_at", align: 'start'},
+        { title: "Actions", value: "actions", sortable: false, width:'150px',align: 'end',},
       ],
       dialog: false,
       editedStation: {},
+      originalEditedStation: {}
     };
   },
   async created() {
     try {
       // Call the getStation function from the service
-      this.stations = await getStation();
+      this.stations = await getStations();
     } catch (error) {
       console.error("Failed to fetch stations:", error);
     }
@@ -183,21 +255,45 @@ export default {
       else return "primary";
     },
     editStation(station) {
-      // Open the edit modal and populate the form with the selected station data
-      this.dialog = true;
-      this.editedStation = { ...station }; // Create a copy to avoid modifying the original data
-    },
+  console.log('Editing station...', station);
+  this.dialog = true;
+  this.editedStation = { ...station };
+  this.originalEditedStation = { ...station };
+  console.log('Original state:', this.originalEditedStation);
+},
     closeDialog() {
-      // Close the edit modal
-      this.dialog = false;
+  console.log('Closing dialog...');
+  this.dialog = false;
+  console.log('Resetting to original state:', this.originalEditedStation);
+  this.editedStation = { ...this.originalEditedStation };
+},
+    addCourse() {
+      this.editedStation = { ...this.editedStation, Courses_Offered: [...this.editedStation.Courses_Offered, { Course_Name: '' }] };
+
     },
-    // async saveStationChanges() {
-    //   try {
-    //     const formData = new FormData();
-    //     formData.append("lastName", this.lastName);
-    //     formData.append("firstName", this.firstName);
-    //     formData.append("middleName", this.middleName);
-  //},
+    removeCourse(index) {
+    this.editedStation = {
+        ...this.editedStation,
+        Courses_Offered: this.editedStation.Courses_Offered.filter((_, i) => i !== index)
+    };
+}
+  },
+  async saveStationChanges() {
+    // Log the values of editedStation
+    console.log('Edited Station:', this.editedStation);
+
+    // Perform any necessary validation or data manipulation
+    // then send the updated station data to your backend
+    // Example: call an API with axios
+    axios.post('/api/update-station', this.editedStation)
+      .then(response => {
+        // Handle the response, update UI or show a success message
+        console.log('Station data saved successfully', response.data);
+      })
+      .catch(error => {
+        // Handle errors, show error message to the user
+        console.error('Error saving station data', error);
+      });
   },
 };
 </script>

@@ -12,8 +12,8 @@ export async function getCourses() {
 
 export async function getStations() {
   try {
-    const courses = await axios.get("getStations");
-    return courses.data; // Return the data
+    const stations = await axios.get("getStations");
+    return stations.data; // Return the data
   } catch (error) {
     console.log(error);
     throw error; // Rethrow the error
@@ -21,13 +21,23 @@ export async function getStations() {
 }
 export async function getStation() {
   try {
-    const courses = await axios.get("getStation");
-    return courses.data; // Return the data
+    const station = await axios.get("getStation");
+    return station.data; // Return the data
   } catch (error) {
     console.log(error);
     throw error; // Rethrow the error
   }
 }
+export async function getCourse() {
+  try {
+    const course = await axios.get("getCourse");
+    return course.data; // Return the data
+  } catch (error) {
+    console.log(error);
+    throw error; // Rethrow the error
+  }
+}
+
 
 export async function getApplicants() {
   try {

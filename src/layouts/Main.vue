@@ -71,7 +71,7 @@
 export default {
   data() {
     return {
-      sidebarOpen: true, // Initially open the sidebar
+      sidebarOpen: false, // Initially close the sidebar
       breadcrumbs: [],
     };
   },

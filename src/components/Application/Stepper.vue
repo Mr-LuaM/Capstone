@@ -833,9 +833,9 @@ export default {
       return [];
     },
     filteredStations3() {
-      if (this.course2 && this.courses) {
+      if (this.course3 && this.courses) {
         const selectedCourse = this.courses.find(
-          (course) => course.Course_Name === this.course2
+          (course) => course.Course_Name === this.course3
         );
         if (selectedCourse) {
           return selectedCourse.Stations_Offering.map(

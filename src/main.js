@@ -23,6 +23,7 @@ import HeightInput from "./components/forms/HeightInput.vue";
 import WeightInput from "./components/forms/WeightInput.vue";
 import PasswordInput from "./components/forms/PasswordInput.vue";
 import ConfirmPasswordInput from "./components/forms/ConfirmPasswordInput.vue";
+import CourseSelection from "./components/forms/CourseSelection.vue";
 //address
 import Address from "./components/forms/address/Address.vue";
 
@@ -56,6 +57,7 @@ app.component("HeightInput", HeightInput);
 app.component("WeightInput", WeightInput);
 app.component("PasswordInput", PasswordInput);
 app.component("ConfirmPasswordInput", ConfirmPasswordInput);
+app.component("CourseSelection", CourseSelection);
 //address
 app.component("Address", Address);
 
