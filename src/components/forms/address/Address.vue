@@ -11,7 +11,7 @@
     :density="customDensity"
     :hint="customHint"
     @input="updateValue"
-    append-inner-icon="mdi-map-marker"
+    :append-inner-icon="customAppendInnerIcon"
   ></v-text-field>
 </template>
 
@@ -49,6 +49,10 @@ export default {
     customHint: {
       type: String,
       default: "Region, Province, City, Brgy, House Number (if applicable)",
+    },
+    customAppendInnerIcon:{
+      type: String,
+      default:"mdi-map-marker"
     },
   },
   data() {
