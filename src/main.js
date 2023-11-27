@@ -25,6 +25,7 @@ import PasswordInput from "./components/forms/PasswordInput.vue";
 import ConfirmPasswordInput from "./components/forms/ConfirmPasswordInput.vue";
 import CourseSelection from "./components/forms/CourseSelection.vue";
 import GenericAutocomplete from "./components/forms/Generic/GenericAutocomplete.vue";
+import GenericTextField from "./components/forms/Generic/GenericTextField.vue";
 //address
 import Address from "./components/forms/address/Address.vue";
 
@@ -72,5 +73,5 @@ app.component("warning", warning);
 app.component("success", success);
 app.component("confirmationModal", confirmationModal);
 app.component("GenericAutocomplete", GenericAutocomplete);
-
+app.component("GenericTextField", GenericTextField);
 app.use(router).use(vuetify).mount("#app");

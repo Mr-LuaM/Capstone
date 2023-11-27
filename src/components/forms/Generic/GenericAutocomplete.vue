@@ -7,6 +7,7 @@
     :label="customLabel"
     :variant="customVariant"
     :density="customDensity"
+    :placeholder="customPlaceholder"
     @blur="updateValue"
   ></v-autocomplete>
 </template>
@@ -16,7 +17,7 @@ export default {
   props: {
     modelValue: {
       type: [String, Number],
-      default: "",
+      default: null,
     },
     customLabel: {
       type: String,
@@ -33,6 +34,10 @@ export default {
     options: {
       type: Array,
       default: () => [],
+    },
+    customPlaceholder: {
+      type: String,
+      default: "Select",
     },
   },
   data() {

@@ -8,13 +8,33 @@
 
         <v-col cols="auto">
           <v-btn
-            icon="mdi-filter-variant"
-            size="small"
-            id="menu-activator"
-            color="white"
-            variant="text"
-          ></v-btn>
-        </v-col>
+      icon="mdi-filter-variant"
+      size="small"
+      id="menu-activator"
+      color="white"
+      variant="text"
+    ></v-btn>
+  </v-col>
+  <v-menu activator="#menu-activator" :close-on-content-click="false">
+    <v-list>
+      <v-container fluid>
+        <v-checkbox
+          v-model="filter"
+          label="active"
+          value="active"
+          class="px-0 mx-0"
+          hide-details
+        ></v-checkbox>
+        <v-checkbox
+          v-model="filter"
+          label="inactive"
+          value="inactive"
+          class="px-0 mx-0"
+          hide-details
+        ></v-checkbox>
+      </v-container>
+    </v-list>
+  </v-menu>
 
         <v-text-field
           v-model="search"
@@ -26,23 +46,30 @@
           hide-details
           variant="outlined"
         ></v-text-field>
+        
+        <v-col cols="auto">
+        <v-btn variant="flat" @click="openAddDialog" color="secondary">
+        Add New
+      </v-btn>
+      </v-col>
       </v-card-title>
+      
 
       <v-divider></v-divider>
 
       <v-data-table
-        v-model:search="search"
-        :headers="headers"
-        :items="stations"
-        :item-value="(item) => `${item.Station_Name}-${item.Station_ID}`"
-        class="elevation-1 rounded-lg"
-        show-select
-        v-model="selected"
-        return-object
-        density="comfortable"
-        hover="primary"
-        show-expand
-      >
+    v-model:search="search"
+    :headers="headers"
+    :items="filteredStations"
+    :item-value="(item) => `${item.Station_Name}-${item.Station_ID}`"
+    class="elevation-1 rounded-lg"
+    show-select
+    v-model="selected"
+    return-object
+    density="comfortable"
+    hover="primary"
+    show-expand
+  >
       
     <template v-slot:expanded-row="{ columns, item }">
    <tr><td :colspan="columns.length"> 
@@ -106,115 +133,107 @@ variant="plain"
     <!-- Edit Station Modal -->
     
     <v-dialog v-model="dialog" persistent width="800">
-  <v-card>
-    <v-card-title>
-      <span class="text-h5">Edit Station</span>
-    </v-card-title>
-    <v-card-text>
-      <v-container>
-
-        <v-form ref="form" @submit.prevent="saveStationChanges">
-  <v-row justify="center" align="center">
-    <!-- Left side - Forms -->
-    <v-col cols="12" sm="6" md="4">
-
-      <v-text-field
-        label="Station Name*"
-        required
-        v-model="editedStation.Station_Name"
-        variant="outlined"
-        density="compact"
-      ></v-text-field>
-    </v-col>
-
-    <v-col cols="12" sm="6" md="4">
-      <Address
-      divLabel=""
-        v-model="editedStation.Location"
-        customAppendInnerIcon=""
-        customLabel="Address"
-        customHint=""
-      />
-    </v-col>
-
-    <v-col cols="12" sm="6" md="4">
-      <GenericAutocomplete
-          v-model="editedStation.status"
-          custom-label="Status"
-          :options="['active', 'inactive']"
-        />
-    </v-col>
-
-
-    <!-- Right side - Image -->
-    <!-- <v-col cols="12" sm="6" md="8">
-      <v-img
-        src="../../../assets/img/designs/pnp-facade (1).png"
-        alt="Image"
-        width="100%"
-        aspect-ratio="16/9"
-        height="auto"
-      ></v-img>
-    </v-col> -->
-  </v-row>
-  <v-row justify="center" align="center">
-    <v-container class="bg-background rounded">
-      <v-table density="compact" class="rounded-lg">
-        <thead>
-          <tr>
-            <th class="text-left">Courses Offered</th>
-            <th class="text-right">
-              <v-btn icon @click="addCourse" variant="text" color="success" size="small">
-                <v-icon>mdi-plus</v-icon>
-              </v-btn>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(course, index) in editedStation.Courses_Offered" :key="index">
-            <td class="pt-3">
-              <CourseSelection
+    <v-card>
+      <v-card-title>
+        <span class="text-h5">{{ formTitle }}</span>
+      </v-card-title>
+      <v-card-text>
+        <v-container>
+          <v-form ref="form" @submit.prevent="saveAction">
+            <v-row justify="center" align="center">
+              <!-- Left side - Forms -->
+              <v-col cols="12" sm="6" md="4">
+                <GenericTextField
+                customLabel="Station Name*"
                   required
-                  v-model="course.Course_ID"
-                  :model-value="course.Course_ID" 
-                  variant=""
-                  density="compact"
+                  v-model.lazy="editedStation.Station_Name"
                 />
-                <p>{{course.Course_ID  }}</p>
-            </td>
+              </v-col>
 
-            <td class="text-right">
-              <v-btn icon @click="removeCourse(index)" variant="text" color="error" size="small">
-                <v-icon>mdi-minus</v-icon>
-              </v-btn>
-            </td>
-          </tr>
+              <v-col cols="12" sm="6" md="4">
+                <Address
+                  divLabel=""
+                  v-model="editedStation.Location"
+                  customAppendInnerIcon=""
+                  customLabel="Address"
+                  customHint=""
+                />
+              </v-col>
 
-        </tbody>
-      </v-table>
-      <p>Course IDs: {{ editedStation.Courses_Offered.map(course => course.Course_ID).join(', ') }}</p>
-    </v-container>
-  </v-row>
-</v-form>
+              <v-col cols="12" sm="6" md="4">
+                <GenericAutocomplete
+                v-model.lazy="editedStation.status"
+                  custom-label="Status"
+                  :options="['active', 'inactive']"
+                />
+              </v-col>
+            </v-row>
 
-</v-container>
+            <v-row justify="center" align="center">
+              <v-container class="bg-background rounded">
+                <v-table density="compact" class="rounded-lg">
+                  <thead>
+                    <tr>
+                      <th class="text-left">Courses Offered</th>
+                      <th class="text-right">
+                        <v-btn
+                          icon
+                          @click="addCourse"
+                          variant="text"
+                          color="success"
+                          size="small"
+                        >
+                          <v-icon>mdi-plus</v-icon>
+                        </v-btn>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(course, index) in editedStation.Courses_Offered" :key="index">
+                      <td class="pt-3">
+                        <CourseSelection
+                          required
+                          v-model="course.Course_ID"
+                          :model-value="course.Course_ID"
+                          variant=""
+                          density="compact"
+                        />
+                      </td>
 
-
-
-    
-    </v-card-text>
-    <v-card-actions>
-      <v-spacer></v-spacer>
-      <v-btn color="secondary" variant="plain" @click="closeDialog">
-    Close
-  </v-btn>
-      <v-btn variant="text" @click="saveStationChanges" color="primary">
-        Save Changes
-      </v-btn>
-    </v-card-actions>
-  </v-card>
-  
-</v-dialog>
+                      <td class="text-right">
+                        <v-btn
+                          icon
+                          @click="removeCourse(index)"
+                          variant="text"
+                          color="error"
+                          size="small"
+                        >
+                          <v-icon>mdi-minus</v-icon>
+                        </v-btn>
+                      </td>
+                    </tr>
+                  </tbody>
+                </v-table>
+                <p>Course IDs: {{ editedStation.Courses_Offered.map(course => course.Course_ID).join(', ') }}</p>
+              </v-container>
+            </v-row>
+          </v-form>
+        </v-container>
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn color="secondary" variant="plain" @click="closeDialog">
+          Close
+        </v-btn>
+        <v-btn v-if="isEditing()" variant="text" @click="addStation" color="primary">
+          Add Station
+        </v-btn>
+        <v-btn v-else variant="text" @click="saveStationChanges" color="primary">
+          Save Changes
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 
   </v-container>
   <infoSnack ref="snackbar" />
@@ -229,15 +248,16 @@ export default {
     return {
       selected: null,
       search: '',
+      filter: ["active"],
       stations: [],
       headers: [
         
         // { title: "Station ID", value: "Station_ID", align: 'start'},
-        { title: "Station Name", value: "Station_Name", align: 'start',},
-        { title: "Location", value: "Location", align: 'start'},
-        { title: "Status", value: "status", align: 'start'},
-        { title: "Created Since", value: "created_at", align: 'start'},
-        { title: "Last Update", value: "status_updated_at", align: 'start'},
+        { title: "Station Name", value: "Station_Name", align: 'start',sortable: true,},
+        { title: "Location", value: "Location", align: 'start',sortable: true},
+        { title: "Status", value: "status", align: 'start',sortable: true},
+        { title: "Created Since", value: "created_at", align: 'start',sortable: true},
+        { title: "Last Update", value: "status_updated_at", align: 'start',sortable: true},
         { title: "Actions", value: "actions", sortable: false, width:'150px',align: 'end',},
       ],
       dialog: false,
@@ -247,7 +267,23 @@ export default {
       originalEditedStation: {}
     };
   },
-  async created() {
+  created() {
+    this.loadData();
+  },
+  methods: {
+    openAddDialog() {
+      // Reset the editedStation fields when opening the dialog for adding a new station
+      this.editedStation = {
+        Station_Name: '',
+        Location: '',
+        status: '',
+        Courses_Offered: [],
+      };
+
+      // Set dialog to true to open the dialog
+      this.dialog = true;
+    },
+    async loadData() {
     try {
       // Call the getStation function from the service
       this.stations = await getStations();
@@ -255,7 +291,6 @@ export default {
       console.error("Failed to fetch stations:", error);
     }
   },
-  methods: {
     getColor(status) {
       if (status === "active") return "success";
       else return "primary";
@@ -268,10 +303,14 @@ export default {
   console.log('Original state:', this.originalEditedStation);
 },
     closeDialog() {
-  console.log('Closing dialog...');
-  this.dialog = false;
+
+      if(this.isEditing){ this.dialog = false;
   console.log('Resetting to original state:', this.originalEditedStation);
-  this.editedStation = { ...this.originalEditedStation };
+  this.editedStation = { ...this.originalEditedStation };}
+  else{
+    this.dialog = false;
+  }
+ 
 },
 checkForDuplicates() {
   const uniqueCourseIds = new Set();
@@ -294,11 +333,16 @@ addCourse() {
     return; // Stop further processing
   }
 
-  // Add a new course with a default Course_Name (you can customize this)
-  this.editedStation.Courses_Offered.push({
-    Course_Name: '', // Customize this default value
-    Course_ID: '',   // Keep this empty for the new course
-  });
+  this.editedStation = { 
+    ...this.editedStation, 
+    Courses_Offered: [
+      ...this.editedStation.Courses_Offered, 
+      { Course_Name: '' }
+    ]
+  };
+
+  // Force a reactivity update
+  this.$forceUpdate();
 },
 
 
@@ -333,6 +377,16 @@ async saveStationChanges() {
       // Make the Axios POST request
       const response = await axios.post("editStation", formData);
 
+      if (response.data.success === true) {
+          // Show a success alert or perform other success-related actions here
+          this.$refs.snackbar.openSnackbar(response.data.message, "success");
+          this.dialog = false;
+          this.loadData();
+        } else {
+          // Show the error Snackbar
+          this.$refs.snackbar.openSnackbar(response.data.message, "error");
+        }
+
       // Handle the response if needed
       console.log("Server response:", response.data);
     } catch (error) {
@@ -341,6 +395,33 @@ async saveStationChanges() {
   }
 },
 
-}
+},
+computed: {
+  filteredStations() {
+      // Apply filters based on the selected checkboxes
+      return this.stations.filter((station) => {
+        const statusFilter =
+          this.filter.length === 0 || this.filter.includes(station.status);
+
+        const searchFilter =
+          !this.search ||
+          Object.values(station).some(
+            (value) =>
+              typeof value === "string" &&
+              value.toLowerCase().includes(this.search.toLowerCase())
+          );
+
+        return statusFilter && searchFilter;
+      });
+    },
+    formTitle() {
+      // Use a computed property to determine the form title based on the context (add or edit)
+      return this.isEditing ? 'Edit Station' : 'Add Station';
+    },
+    isEditing() {
+      // Determine if it's an edit operation based on your logic (e.g., checking if Station_ID exists)
+      return Boolean(this.editedStation.Station_ID);
+    },
+  },
 };
 </script>
