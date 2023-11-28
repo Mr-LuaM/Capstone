@@ -922,14 +922,14 @@ export default {
     },
     async getCourses() {
       try {
-        this.courses = await getCourses('active');
+        this.courses = await getCourses("active");
       } catch (error) {
         console.log(error);
       }
     },
     async getStations() {
       try {
-        this.stations = await getStations();
+        this.stations = await getStations("active");
       } catch (error) {
         console.log(error);
       }

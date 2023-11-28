@@ -24,8 +24,11 @@ import WeightInput from "./components/forms/WeightInput.vue";
 import PasswordInput from "./components/forms/PasswordInput.vue";
 import ConfirmPasswordInput from "./components/forms/ConfirmPasswordInput.vue";
 import CourseSelection from "./components/forms/CourseSelection.vue";
+import StationSelection from "./components/forms/StationSelection.vue";
 import GenericAutocomplete from "./components/forms/Generic/GenericAutocomplete.vue";
 import GenericTextField from "./components/forms/Generic/GenericTextField.vue";
+import GenericTextArea from "./components/forms/Generic/GenericTextArea.vue";
+import GenericNumber from "./components/forms/Generic/GenericNumber.vue";
 //address
 import Address from "./components/forms/address/Address.vue";
 
@@ -60,6 +63,12 @@ app.component("WeightInput", WeightInput);
 app.component("PasswordInput", PasswordInput);
 app.component("ConfirmPasswordInput", ConfirmPasswordInput);
 app.component("CourseSelection", CourseSelection);
+app.component("StationSelection", StationSelection);
+app.component("GenericAutocomplete", GenericAutocomplete);
+app.component("GenericTextField", GenericTextField);
+app.component("GenericTextArea", GenericTextArea);
+app.component("GenericNumber", GenericNumber);
+
 //address
 app.component("Address", Address);
 
@@ -72,6 +81,5 @@ app.component("StationAutocomplete", StationAutocomplete);
 app.component("warning", warning);
 app.component("success", success);
 app.component("confirmationModal", confirmationModal);
-app.component("GenericAutocomplete", GenericAutocomplete);
-app.component("GenericTextField", GenericTextField);
+
 app.use(router).use(vuetify).mount("#app");

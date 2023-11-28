@@ -1,0 +1,85 @@
+<!-- GenericStationSelect.vue -->
+<template>
+  <div>
+    <v-autocomplete
+      v-model="selectedStation"
+      :items="stations"
+      :item-title="(item) => item.Station_Name"
+      :item-value="(item) => item.Station_ID"
+      :rules="selectRules"
+      :label="customLabel"
+      :variant="customVariant"
+      :placeholder="customPlaceholder"
+      :density="customDensity"
+      @blur="updateValue"
+    ></v-autocomplete>
+
+    <!-- for debugging -->
+    <!-- <p>{{ selectedStation }}</p> -->
+  </div>
+</template>
+
+<script>
+import { getStations } from "../../services/BackendApi.js";
+
+export default {
+  props: {
+    modelValue: {
+      type: String,
+      default: "",
+    },
+    modelId: {
+      type: String,
+      default: "",
+    },
+    divLabel: {
+      type: String,
+      default: "",
+    },
+    customLabel: {
+      type: String,
+      default: "",
+    },
+    customVariant: {
+      type: String,
+      default: "outlined",
+    },
+    customPlaceholder: {
+      type: String,
+      default: "Select Station",
+    },
+    customDensity: {
+      type: String,
+      default: "compact",
+    },
+  },
+  data() {
+    return {
+      selectedStation: this.modelValue,
+      selectRules: [(v) => !!v || "Station is required"],
+      stations: [],
+    };
+  },
+  mounted() {
+    this.getStations();
+  },
+  watch: {
+    modelValue(newVal) {
+      // Update the selectedStation when the modelValue changes
+      this.selectedStation = newVal;
+    },
+  },
+  methods: {
+    async getStations() {
+      try {
+        this.stations = await getStations();
+      } catch (error) {
+        console.error("Failed to fetch stations:", error);
+      }
+    },
+    updateValue() {
+      this.$emit("update:modelValue", this.selectedStation);
+    },
+  },
+};
+</script>

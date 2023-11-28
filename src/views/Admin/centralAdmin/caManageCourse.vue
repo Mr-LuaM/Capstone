@@ -2,7 +2,7 @@
   <v-container fluid class="rounded-lg bg-surface">
     <v-card flat>
       <v-card-title class="d-flex align-center pe-2 bg-secondary-darken-1">
-        <v-icon icon="mdi-account"></v-icon> &nbsp; Manage Station
+        <v-icon icon="mdi-account"></v-icon> &nbsp; Manage Course
 
         <v-spacer></v-spacer>
 
@@ -59,8 +59,8 @@
       <v-data-table
         v-model:search="search"
         :headers="headers"
-        :items="filteredStations"
-        :item-value="(item) => `${item.Station_Name}-${item.Station_ID}`"
+        :items="filteredCourses"
+        :item-value="(item) => `${item.Course_Name}-${item.Course_ID}`"
         class="elevation-1 rounded-lg"
         show-select
         v-model="selected"
@@ -75,10 +75,8 @@
                 <v-table density="compact" class="rounded-lg">
                   <thead>
                     <tr>
-                      <th class="text-left">Courses Offered</th>
-                      <th class="text-left">Course_Description</th>
-                      <th class="text-left">Duration</th>
-                      <th class="text-left">Credits</th>
+                      <th class="text-left">Station Offerring</th>
+                      <th class="text-left">Location</th>
                       <th class="text-left">Status</th>
                       <!-- <th class="text-left">
           Created
@@ -90,22 +88,20 @@
                   </thead>
                   <tbody>
                     <tr
-                      v-for="course in item.Courses_Offered"
-                      :key="course.Course_ID"
+                      v-for="station in item.Stations_Offering"
+                      :key="station.Station_ID"
                     >
-                      <td class="text-left">{{ course.Course_Name }}</td>
-                      <td class="text-left">{{ course.Course_Description }}</td>
-                      <td class="text-left">{{ course.Duration }}</td>
-                      <td class="text-left">{{ course.Credits }}</td>
+                      <td class="text-left">{{ station.Station_Name }}</td>
+                      <td class="text-left">{{ station.Location }}</td>
                       <td class="text-left">
                         <v-chip
                           :color="
-                            course.status === 'active' ? 'success' : 'error'
+                            station.status === 'active' ? 'success' : 'error'
                           "
                           size="small"
                           label
                         >
-                          {{ course.status }}
+                          {{ station.status }}
                         </v-chip>
                       </td>
                       <!-- <td class="text-left">{{ course.created_at }}</td>
@@ -127,7 +123,7 @@
             density="compact"
             size="x-large"
             icon="mdi-pencil"
-            @click="editStation(item)"
+            @click="editCourse(item)"
             color="secondary"
             variant="plain"
           >
@@ -135,7 +131,7 @@
 
           <v-btn
             size="x-large"
-            @click="openConfirmDialog(item.Station_ID)"
+            @click="openConfirmDialog(item.Course_ID)"
             :color="item.status === 'inactive' ? 'success' : 'error'"
             density="compact"
             icon="mdi-swap-horizontal-circle-outline"
@@ -145,120 +141,131 @@
         </template>
       </v-data-table>
     </v-card>
-
-    <!-- Edit Station Modal -->
-
-    <v-dialog v-model="dialog" persistent width="800">
-      <v-card>
-        <v-card-title>
-          <span class="text-h5">{{ formTitle }}</span>
-        </v-card-title>
-        <v-card-text>
-          <v-container>
-            <v-form ref="form" @submit.prevent="submit">
-              <v-row justify="center" align="center">
-                <!-- Left side - Forms -->
-                <v-col cols="12" sm="6" md="4">
-                  <GenericTextField
-                    customLabel="Station Name*"
-                    required
-                    v-model="editedStation.Station_Name"
-                  />
-                </v-col>
-
-                <v-col cols="12" sm="6" md="4">
-                  <Address
-                    divLabel=""
-                    v-model="editedStation.Location"
-                    customAppendInnerIcon=""
-                    customLabel="Location"
-                    customHint=""
-                  />
-                </v-col>
-
-                <v-col cols="12" sm="6" md="4">
-                  <GenericAutocomplete
-                    v-model.lazy="editedStation.status"
-                    custom-label="Status"
-                    :options="['active', 'inactive']"
-                  />
-                </v-col>
-              </v-row>
-
-              <v-row justify="center" align="center">
-                <v-container class="bg-background rounded">
-                  <v-table density="compact" class="rounded-lg">
-                    <thead>
-                      <tr>
-                        <th class="text-left">Courses Offered</th>
-                        <th class="text-right">
-                          <v-btn
-                            icon
-                            @click="addCourse"
-                            variant="text"
-                            color="success"
-                            size="small"
-                          >
-                            <v-icon>mdi-plus</v-icon>
-                          </v-btn>
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr
-                        v-for="(course, index) in editedStation.Courses_Offered"
-                        :key="index"
-                      >
-                        <td class="pt-3">
-                          <CourseSelection
-                            required
-                            v-model="course.Course_ID"
-                            :model-value="course.Course_ID"
-                            variant=""
-                            density="compact"
-                          />
-                        </td>
-
-                        <td class="text-right">
-                          <v-btn
-                            icon
-                            @click="removeCourse(index)"
-                            variant="text"
-                            color="error"
-                            size="small"
-                          >
-                            <v-icon>mdi-minus</v-icon>
-                          </v-btn>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </v-table>
-                  <!-- <p>Course IDs: {{ editedStation.Courses_Offered.map(course => course.Course_ID).join(', ') }}</p> -->
-                </v-container>
-              </v-row>
-            </v-form>
-          </v-container>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="secondary" variant="plain" @click="closeDialog">
-            Close
-          </v-btn>
-          <v-btn
-            v-if="isEditing"
-            variant="text"
-            @click="saveStationChanges"
-            color="primary"
-          >
-            Save Changes
-          </v-btn>
-          <v-btn v-else variant="text" @click="addStation" color="primary">
-            Add Station
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
   </v-container>
+
+  <!-- Edit Station Modal -->
+
+  <v-dialog v-model="dialog" persistent width="800">
+    <v-card>
+      <v-card-title>
+        <span class="text-h5">{{ formTitle }}</span>
+      </v-card-title>
+      <v-card-text>
+        <v-container>
+          <v-form ref="form" @submit.prevent="submit">
+            <v-row justify="center" align="center">
+              <!-- Left side - Forms -->
+              <v-col cols="12">
+                <GenericTextField
+                  customLabel="Course Name*"
+                  required
+                  v-model="editedCourse.Course_Name"
+                />
+              </v-col>
+
+              <v-col cols="12">
+                <GenericTextArea
+                  customLabel="Course Description*"
+                  required
+                  v-model="editedCourse.Course_Description"
+                />
+              </v-col>
+              <v-col cols="12" md="6" sm="4">
+                <GenericNumber
+                  customLabel="Duration"
+                  :is-required="true"
+                  v-model="editedCourse.Duration"
+                />
+              </v-col>
+              <v-col cols="12" md="6" sm="4">
+                <GenericNumber
+                  customLabel="Credits"
+                  :is-required="true"
+                  v-model="editedCourse.Credits"
+                />
+              </v-col>
+
+              <v-col cols="12">
+                <GenericAutocomplete
+                  v-model.lazy="editedCourse.status"
+                  custom-label="Status"
+                  :options="['active', 'inactive']"
+                />
+              </v-col>
+            </v-row>
+
+            <v-row justify="center" align="center">
+              <v-container class="bg-background rounded">
+                <v-table density="compact" class="rounded-lg">
+                  <thead>
+                    <tr>
+                      <th class="text-left">Stations Offering</th>
+                      <th class="text-right">
+                        <v-btn
+                          icon
+                          @click="addStation"
+                          variant="text"
+                          color="success"
+                          size="small"
+                        >
+                          <v-icon>mdi-plus</v-icon>
+                        </v-btn>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      v-for="(station, index) in editedCourse.Stations_Offering"
+                      :key="index"
+                    >
+                      <td class="pt-3">
+                        <StationSelection
+                          required
+                          v-model="station.Station_ID"
+                          :model-value="station.Station_ID"
+                          variant=""
+                          density="compact"
+                        />
+                      </td>
+
+                      <td class="text-right">
+                        <v-btn
+                          icon
+                          @click="removeStation(index)"
+                          variant="text"
+                          color="error"
+                          size="small"
+                        >
+                          <v-icon>mdi-minus</v-icon>
+                        </v-btn>
+                      </td>
+                    </tr>
+                  </tbody>
+                </v-table>
+              </v-container>
+            </v-row>
+          </v-form>
+        </v-container>
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn color="secondary" variant="plain" @click="closeDialog">
+          Close
+        </v-btn>
+        <v-btn
+          v-if="isEditing"
+          variant="text"
+          @click="saveCourseChanges"
+          color="primary"
+        >
+          Save Changes
+        </v-btn>
+        <v-btn v-else variant="text" @click="addCourses" color="primary">
+          Add Course
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
   <infoSnack ref="snackbar" />
   <confirmationModal
     ref="confirmationModal"
@@ -266,29 +273,38 @@
     @cancel="this.$refs.confirmationModal.dialog = false"
   />
 </template>
-
 <script>
-import { getStations } from "../../../services/BackendApi";
+import { getCourses } from "../../../services/BackendApi";
 import axios from "axios";
-
 export default {
   data() {
     return {
+      courses: [],
       selected: null,
       search: "",
       filter: ["active"],
-      stations: [],
       headers: [
-        // { title: "Station ID", value: "Station_ID", align: 'start'},
         {
-          title: "Station Name",
-          value: "Station_Name",
+          title: "Course Name",
+          value: "Course_Name",
           align: "start",
           sortable: true,
         },
         {
-          title: "Location",
-          value: "Location",
+          title: "Course_Description",
+          value: "Course_Description",
+          align: "start",
+          sortable: true,
+        },
+        {
+          title: "Duration (y)",
+          value: "Duration",
+          align: "start",
+          sortable: true,
+        },
+        {
+          title: "Credits",
+          value: "Credits",
           align: "start",
           sortable: true,
         },
@@ -314,32 +330,20 @@ export default {
         },
       ],
       dialog: false,
-      editedStation: {
+      editedCourse: {
         // Your form fields here
       },
-      originalEditedStation: {},
+      originalEditedCourse: {},
     };
   },
   created() {
     this.loadData();
   },
   methods: {
-    openAddDialog() {
-      // Reset the editedStation fields when opening the dialog for adding a new station
-      this.editedStation = {
-        Station_Name: "",
-        Location: "",
-        status: "",
-        Courses_Offered: [],
-      };
-
-      // Set dialog to true to open the dialog
-      this.dialog = true;
-    },
     async loadData() {
       try {
         // Call the getStation function from the service
-        this.stations = await getStations();
+        this.courses = await getCourses();
       } catch (error) {
         console.error("Failed to fetch stations:", error);
       }
@@ -348,51 +352,64 @@ export default {
       if (status === "active") return "success";
       else return "primary";
     },
-    editStation(station) {
-      console.log("Editing station...", station);
+    openAddDialog() {
+      // Reset the editedCourse fields when opening the dialog for adding a new station
+      this.editedCourse = {
+        Course_Name: "",
+        Course_Description: "",
+        Duration: "",
+        Credits: "",
+        status: "",
+        Stations_Offering: [],
+      };
+
+      // Set dialog to true to open the dialog
       this.dialog = true;
-      this.editedStation = { ...station };
-      this.originalEditedStation = { ...station };
-      console.log("Original state:", this.originalEditedStation);
+    },
+    editCourse(course) {
+      this.dialog = true;
+      this.editedCourse = { ...course };
+      this.originalEditedCourse = { ...course };
+      console.log("Original state:", this.originalEditedCourse);
     },
     closeDialog() {
       if (this.isEditing) {
         this.dialog = false;
-        console.log("Resetting to original state:", this.originalEditedStation);
-        this.editedStation = { ...this.originalEditedStation };
+        console.log("Resetting to original state:", this.originalEditedCourse);
+        this.editedCourse = { ...this.originalEditedCourse };
       } else {
         this.dialog = false;
       }
     },
     checkForDuplicates() {
-      const uniqueCourseIds = new Set();
+      const uniqueStationIds = new Set();
 
-      for (const course of this.editedStation.Courses_Offered) {
-        if (uniqueCourseIds.has(course.Course_ID)) {
+      for (const station of this.editedCourse.Stations_Offering) {
+        if (uniqueStationIds.has(station.Station_ID)) {
           return true; // Indicates duplicates were found
         }
 
-        uniqueCourseIds.add(course.Course_ID);
+        uniqueStationIds.add(station.Station_ID);
       }
 
       return false; // Indicates no duplicates were found
     },
 
-    addCourse() {
+    addStation() {
       // Check for duplicates before adding a new course
       if (this.checkForDuplicates()) {
         this.$refs.snackbar.openSnackbar(
-          "Error: Duplicate course selected",
+          "Error: Duplicate stations selected",
           "error"
         );
         return; // Stop further processing
       }
 
-      this.editedStation = {
-        ...this.editedStation,
-        Courses_Offered: [
-          ...this.editedStation.Courses_Offered,
-          { Course_Name: "" },
+      this.editedCourse = {
+        ...this.editedCourse,
+        Stations_Offering: [
+          ...this.editedCourse.Stations_Offering,
+          { Station_Name: null },
         ],
       };
 
@@ -400,41 +417,56 @@ export default {
       this.$forceUpdate();
     },
 
-    removeCourse(index) {
-      this.editedStation = {
-        ...this.editedStation,
-        Courses_Offered: this.editedStation.Courses_Offered.filter(
+    removeStation(index) {
+      this.editedCourse = {
+        ...this.editedCourse,
+        Stations_Offering: this.editedCourse.Stations_Offering.filter(
           (_, i) => i !== index
         ),
       };
     },
-    async addStation() {
+    async addCourses() {
       const { valid } = await this.$refs.form.validate();
       if (valid) {
         try {
           if (this.checkForDuplicates()) {
             this.$refs.snackbar.openSnackbar(
-              "Error: Duplicate course selected",
+              "Error: Duplicate station selected",
               "error"
             );
             return; // Stop further processing if duplicates are found
           }
 
           const formData = new FormData();
-          formData.append("Station_Name", this.editedStation.Station_Name);
-          formData.append("Location", this.editedStation.Location);
-          formData.append("status", this.editedStation.status);
 
-          // Append Courses_Offered data
-          this.editedStation.Courses_Offered.forEach((course, index) => {
+          // Function to ensure the value is an integer
+          function toInt(value) {
+            return Number.isInteger(value) ? value : parseInt(value, 10);
+          }
+
+          formData.append("Course_Name", this.editedCourse.Course_Name);
+          formData.append(
+            "Course_Description",
+            this.editedCourse.Course_Details
+          );
+
+          // Convert Duration and Credits to integers
+          formData.append("Duration", toInt(this.editedCourse.Duration));
+          formData.append("Credits", toInt(this.editedCourse.Credits));
+
+          formData.append("status", this.editedCourse.status);
+
+          this.editedCourse.Stations_Offering.forEach((station, index) => {
             formData.append(
-              `Courses_Offered[${index}][Course_ID]`,
-              course.Course_ID
+              `Station_Offering[${index}][Station_ID]`,
+              toInt(station.Station_ID)
             );
           });
 
+          // Now formData contains values with Duration and Credits as integers
+
           // Make an HTTP POST request to the backend
-          const response = await axios.post("addStation", formData);
+          const response = await axios.post("addCourse", formData);
 
           // Check the response and show a success message or handle errors
           if (response.data.success === true) {
@@ -446,13 +478,13 @@ export default {
             this.$refs.snackbar.openSnackbar(response.data.message, "error");
           }
         } catch (error) {
-          console.error("Error adding station:", error);
+          console.error("Error adding course:", error);
           // Handle the error and show an error message if needed
-          this.$refs.snackbar.openSnackbar("Error adding station", "error");
+          this.$refs.snackbar.openSnackbar("Error adding course", "error");
         }
       }
     },
-    async saveStationChanges() {
+    async saveCourseChanges() {
       const { valid } = await this.$refs.form.validate();
       if (valid) {
         try {
@@ -464,23 +496,32 @@ export default {
             );
             return; // Stop further processing if duplicates are found
           }
-
+          function toInt(value) {
+            return Number.isInteger(value) ? value : parseInt(value, 10);
+          }
           const formData = new FormData();
-          formData.append("Station_ID", this.editedStation.Station_ID);
-          formData.append("Station_Name", this.editedStation.Station_Name);
-          formData.append("Location", this.editedStation.Location);
-          formData.append("status", this.editedStation.status);
+          formData.append("Course_ID", this.editedCourse.Course_ID);
+          formData.append("Course_Name", this.editedCourse.Course_Name);
+          formData.append(
+            "Course_Description",
+            this.editedCourse.Course_Description
+          );
 
-          // Append Courses_Offered data
-          this.editedStation.Courses_Offered.forEach((course, index) => {
+          // Convert Duration and Credits to integers
+          formData.append("Duration", toInt(this.editedCourse.Duration));
+          formData.append("Credits", toInt(this.editedCourse.Credits));
+
+          formData.append("status", this.editedCourse.status);
+
+          this.editedCourse.Stations_Offering.forEach((station, index) => {
             formData.append(
-              `Courses_Offered[${index}][Course_ID]`,
-              course.Course_ID
+              `Station_Offering[${index}][Station_ID]`,
+              toInt(station.Station_ID)
             );
           });
 
           // Make the Axios POST request
-          const response = await axios.post("editStation", formData);
+          const response = await axios.post("editCourse", formData);
 
           if (response.data.success === true) {
             // Show a success alert or perform other success-related actions here
@@ -511,7 +552,7 @@ export default {
         );
         const secureToken = secureTokenResponse.data;
         // Use axios or your preferred HTTP library to send a request to your backend
-        const response = await axios.post("toggleStatus/" + id, {
+        const response = await axios.post("toggleCourseStatus/" + id, {
           secureToken,
         });
         if (response.data.success === true) {
@@ -530,15 +571,15 @@ export default {
     },
   },
   computed: {
-    filteredStations() {
+    filteredCourses() {
       // Apply filters based on the selected checkboxes
-      return this.stations.filter((station) => {
+      return this.courses.filter((course) => {
         const statusFilter =
-          this.filter.length === 0 || this.filter.includes(station.status);
+          this.filter.length === 0 || this.filter.includes(course.status);
 
         const searchFilter =
           !this.search ||
-          Object.values(station).some(
+          Object.values(course).some(
             (value) =>
               typeof value === "string" &&
               value.toLowerCase().includes(this.search.toLowerCase())
@@ -549,13 +590,13 @@ export default {
     },
     formTitle() {
       // Use a computed property to determine the form title based on the context (add or edit)
-      return this.isEditing ? "Edit Station" : "Add Station";
+      return this.isEditing ? "Edit Course" : "Add Course";
     },
     isEditing() {
       // Determine if it's an edit operation based on your logic (e.g., checking if Station_ID exists and is not empty)
       return (
-        Boolean(this.editedStation.Station_ID) ||
-        this.editedStation.Station_ID === 0
+        Boolean(this.editedCourse.Course_ID) ||
+        this.editedCourse.Course_ID === 0
       ); // Check for non-emptiness
     },
   },

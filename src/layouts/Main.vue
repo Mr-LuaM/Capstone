@@ -43,6 +43,14 @@
           >
             <v-list-item-title>Stations</v-list-item-title>
           </v-list-item>
+          <v-list-item
+            link
+            to="/admin/courses"
+            :class="{ highlight: isRouteActive('/admin/courses') }"
+            prepend-icon="mdi-book-open-page-variant"
+          >
+            <v-list-item-title>Courses</v-list-item-title>
+          </v-list-item>
           <!-- Add more menu items for different sections -->
         </v-list>
         <template v-slot:append>

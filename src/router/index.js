@@ -48,6 +48,19 @@ const routes = [
     ],
   },
   {
+    path: "/admin/courses",
+    name: "caManageCourses",
+    component: Main,
+    meta: { requiredRoles: ["1"] },
+    children: [
+      {
+        path: "",
+        component: () =>
+          import("../views/Admin/centralAdmin/caManageCourse.vue"),
+      },
+    ],
+  },
+  {
     path: "/application",
     name: "application",
     component: Solo,
