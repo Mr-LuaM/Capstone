@@ -1,12 +1,15 @@
 <template>
   <v-app>
     <!-- Admin Page Header -->
-    <v-app-bar app color="primary-darken-1" class="rounded-b-m">
+    <v-app-bar app class="rounded-b-m" color="primary" style="background: linear-gradient(90deg, hsla(210, 100%, 20%, 1) 85%, hsla(350, 85%, 42%, 1) 91%);">
+
+
       <v-app-bar-nav-icon @click="toggleSidebar"></v-app-bar-nav-icon>
       <v-toolbar-title class="ml-2">Admin Dashboard</v-toolbar-title>
       <v-spacer></v-spacer>
 
       <ThemeSwitcher />
+      <AvatarMenu />
     </v-app-bar>
 
     <!-- Admin Page Content -->
@@ -18,6 +21,16 @@
         v-model="sidebarOpen"
         class="elevation-12 rounded-e"
       >
+
+        <v-img
+         
+          width="300"
+          :aspect-ratio="1"
+          src="@/assets/img/logo/logo.jpg"
+          cover
+        
+        ></v-img>
+      
         <v-list density="comfortable" nav>
           <v-list-item
             link
@@ -51,6 +64,16 @@
           >
             <v-list-item-title>Courses</v-list-item-title>
           </v-list-item>
+          <v-list-item
+            link
+            to="/admin/accounts"
+            :class="{ highlight: isRouteActive('/admin/accounts') }"
+            prepend-icon="mdi-account-group"
+          >
+            <v-list-item-title>Accounts</v-list-item-title>
+          </v-list-item>
+
+          <v-divider inset></v-divider>
           <!-- Add more menu items for different sections -->
         </v-list>
         <template v-slot:append>
@@ -92,6 +115,9 @@ export default {
       // For example, clear the token from localStorage
       localStorage.removeItem("jwt_token");
 
+      // Clear user information from Vuex store
+      this.$store.dispatch("logout");
+
       // Redirect to the login page and clear navigation history
       this.$router.push({ path: "/login" }).catch(() => {});
     },
@@ -99,12 +125,16 @@ export default {
       return this.$route.path === route;
     },
     updateBreadcrumbs() {
-  const routeSegments = this.$route.path.split('/').filter(segment => segment !== '');
+      const routeSegments = this.$route.path
+        .split("/")
+        .filter((segment) => segment !== "");
 
-  this.breadcrumbs = routeSegments.map(segment => segment.charAt(0).toUpperCase() + segment.slice(1));
+      this.breadcrumbs = routeSegments.map(
+        (segment) => segment.charAt(0).toUpperCase() + segment.slice(1)
+      );
 
-  console.log('Breadcrumbs:', this.breadcrumbs);
-},
+      console.log("Breadcrumbs:", this.breadcrumbs);
+    },
   },
   watch: {
     $route() {

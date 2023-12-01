@@ -6,9 +6,8 @@
       max-width="500"
       border
       rounded
-  
     >
-    <v-progress-linear
+      <v-progress-linear
         :active="loading"
         :indeterminate="loading"
         absolute
@@ -163,47 +162,46 @@ export default {
   }),
   methods: {
     async checkEmail() {
-  // Set loading to true before making the request
-  
+      // Set loading to true before making the request
 
-  const { valid } = await this.$refs.checkEmail.validate();
+      const { valid } = await this.$refs.checkEmail.validate();
 
-  if (valid) {
-    try {
-      const formData = new FormData();
-      formData.append("Email", this.email);
+      if (valid) {
+        try {
+          const formData = new FormData();
+          formData.append("Email", this.email);
 
-      // Make the Axios POST request
-      const response = await axios.post("checkEmail", formData);
+          // Make the Axios POST request
+          const response = await axios.post("checkEmail", formData);
 
-      if (response.data.success === true) {
-        this.loading=true;
-        // After receiving a successful response, wait for 3 seconds
-        setTimeout(() => {
-          // Update the loading state to false and increment the step
-         
-          this.emailError = null;
-          this.step++;
-          this.loading = false;
-        }, 2000);
-      } else {
-        this.emailError = response.data.error || "Email not found";
+          if (response.data.success === true) {
+            this.loading = true;
+            // After receiving a successful response, wait for 3 seconds
+            setTimeout(() => {
+              // Update the loading state to false and increment the step
 
-        // If the response is not successful, wait for a shorter time before setting loading to false
-        setTimeout(() => {
-          this.loading = false;
-        }, 100);
+              this.emailError = null;
+              this.step++;
+              this.loading = false;
+            }, 2000);
+          } else {
+            this.emailError = response.data.error || "Email not found";
+
+            // If the response is not successful, wait for a shorter time before setting loading to false
+            setTimeout(() => {
+              this.loading = false;
+            }, 100);
+          }
+        } catch (error) {
+          console.error(error);
+        } finally {
+          // Set loading to false after the request is completed
+          setTimeout(() => {
+            this.loading = false;
+          }, 2000);
+        }
       }
-    } catch (error) {
-      console.error(error);
-    } finally {
-      // Set loading to false after the request is completed
-      setTimeout(() => {
-        this.loading = false;
-      }, 2000);
-    }
-  }
-},
+    },
 
     handleUserRole(role) {
       const router = this.$router; // Access router directly
@@ -211,86 +209,70 @@ export default {
       if (router) {
         console.log("Role received:", role);
 
-        switch (role) {
-          case "1":
-            console.log("Redirecting to /admin-dashboard");
-            router.push("/admin/applicants");
-            break;
-          case "6":
-            console.log("Redirecting to /applicant-dashboard");
-            router.push("/applicant-dashboard");
-            break;
-          case "2":
-            console.log("Redirecting to /main-admin-dashboard");
-            router.push("/main-admin-dashboard");
-            break;
-          case "3":
-            console.log("Redirecting to /station-admin-dashboard");
-            router.push("/station-admin-dashboard");
-            break;
-          case "5":
-            console.log("Redirecting to /student-dashboard");
-            router.push("/admin/applicants");
-            break;
-          case "4":
-            console.log("Redirecting to /teacher-dashboard");
-            router.push("/teacher-dashboard");
-            break;
-          default:
-            console.log("Redirecting to /hi");
-            router.push("/hi");
-        }
+        const roleRoutes = {
+          1: "/admin/applicants",
+          6: "/applicant-dashboard",
+          2: "/main-admin-dashboard",
+          3: "/station-admin-dashboard",
+          5: "/admin/applicants",
+          4: "/teacher-dashboard",
+        };
+
+        const defaultRoute = "/hi";
+        const targetRoute = roleRoutes[role] || defaultRoute;
+
+        console.log(`Redirecting to ${targetRoute}`);
+        router.push(targetRoute);
       }
     },
 
     async submit() {
-    const { valid } = await this.$refs.form.validate();
+      const { valid } = await this.$refs.form.validate();
 
-    if (valid) {
+      if (valid) {
         try {
-            this.loading = true;
+          this.loading = true;
 
-            const formData = new FormData();
-            formData.append("Email", this.email);
-            formData.append("Password", this.password);
+          const formData = new FormData();
+          formData.append("Email", this.email);
+          formData.append("Password", this.password);
 
-            const response = await axios.post("login", formData);
+          const response = await axios.post("login", formData);
 
-            if (response.data.token) {
-                const token = response.data.token;
+          if (response.data.token) {
+            const token = response.data.token;
 
-                localStorage.setItem("jwt_token", token);
+            localStorage.setItem("jwt_token", token);
 
-                // Use jwt_decode alias to decode the token
-                const decodedToken = jwt_decode(token);
-                console.log(decodedToken);
+            // Use jwt_decode alias to decode the token
+            const decodedToken = jwt_decode(token);
 
-                // If you have a specific reason for delaying execution, keep it; otherwise, remove this setTimeout
-                setTimeout(() => {
-                    this.handleUserRole(decodedToken.role);
-                }, 2000);
-            } else {
-                // Display the error message returned from the server
-                this.passwordError = response.data.error;
-            }
+            // Extract user ID, email, and role from the decoded token
+            const userId = decodedToken.user_id; // Check that 'user_id' matches the backend
+            const userEmail = decodedToken.email;
+            const userRole = decodedToken.role; // Add this line to extract the role
+
+            // Store user ID, email, and role in Vuex
+            this.$store.dispatch("login", { userId, userEmail, userRole });
+
+            // Set the user role in the store
+            this.$store.dispatch("setRole", userRole);
+
+            this.$store.dispatch("fetchUserDetails");
+
+            // If you have a specific reason for delaying execution, keep it; otherwise, remove this setTimeout
+            this.handleUserRole(userRole);
+          } else {
+            // Display the error message returned from the server
+            this.passwordError = response.data.error;
+          }
         } catch (error) {
-            if (error.response) {
-                console.error("Server Error:", error.response.data);
-                // Display the error message returned from the server
-                this.passwordError = error.response.data.error || "Server error. Please try again later.";
-            } else if (error.request) {
-                console.error("Network Error:", error.request);
-                this.passwordError = "Network error. Please check your connection.";
-            } else {
-                console.error("Error:", error.message);
-                this.passwordError = "An unexpected error occurred.";
-            }
+          // Handle errors
         } finally {
-            this.loading = false;
+          this.loading = false;
         }
-    }
-},
-
-}
-}
+      }
+    },
+  },
+};
 </script>

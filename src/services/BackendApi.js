@@ -54,3 +54,28 @@ export async function getApplicants() {
     throw error; // Rethrow the error
   }
 }
+
+export async function getStationAdminsWithStation() {
+  try {
+    const applicants = await axios.get("getStationAdminsWithStation");
+    return applicants.data; // Return the data
+  } catch (error) {
+    console.log(error);
+    throw error; // Rethrow the error
+  }
+}
+
+export async function getRoles() {
+  try {
+    const secureTokenResponse = await axios.get(
+      "generateSecureToken/" + id
+    );
+    const secureToken = secureTokenResponse.data;
+   
+    const roles = await axios.get("getRoles");
+    return roles.data; // Return the data
+  } catch (error) {
+    console.log(error);
+    throw error; // Rethrow the error
+  }
+}

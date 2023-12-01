@@ -1,7 +1,7 @@
 <template>
   <v-container fluid class="rounded-lg bg-surface">
     <v-card flat>
-      <v-card-title class="d-flex align-center pe-2 bg-secondary-darken-1">
+      <v-card-title class="d-flex align-center pe-2 bg-primary">
         <v-icon icon="mdi-account"></v-icon> &nbsp; Review Applicant
 
         <v-spacer></v-spacer>
@@ -19,7 +19,6 @@
         <v-menu activator="#menu-activator" :close-on-content-click="false">
           <v-list>
             <v-container fluid>
-          
               <v-checkbox
                 v-model="filter"
                 label="Pending"
@@ -67,7 +66,6 @@
         :item-value="(item) => `${item.name}-${item.id}`"
         class="elevation-1"
         return-object
-
       >
         <template v-slot:item.Selected_File1="{ value }">
           <v-card class="my-2" elevation="2" rounded>
@@ -98,24 +96,35 @@
             </v-chip>
           </div>
         </template>
-        <template v-slot:item.actions="{ item }" >
-          <v-btn  density="compact"  size="x-large" @click="showDetails(item)" color="secondary" variant="plain" icon="mdi-eye">
-       
-          </v-btn>
-
-          <v-btn  density="compact"  size="x-large" @click="quickapprove(item)" color="success" variant="plain" icon="mdi-content-save" >
-           
+        <template v-slot:item.actions="{ item }">
+          <v-btn
+            density="compact"
+            size="x-large"
+            @click="showDetails(item)"
+            color="secondary"
+            variant="plain"
+            icon="mdi-eye"
+          >
           </v-btn>
 
           <v-btn
-             density="compact"  size="x-large"
+            density="compact"
+            size="x-large"
+            @click="quickapprove(item)"
+            color="success"
+            variant="plain"
+            icon="mdi-content-save"
+          >
+          </v-btn>
+
+          <v-btn
+            density="compact"
+            size="x-large"
             @click="openConfirmDialog(item.id)"
             color="primary"
             variant="plain"
             icon="mdi-archive"
-           
           >
-          
           </v-btn>
         </template>
       </v-data-table>
@@ -161,9 +170,7 @@
         >
           Archive
         </v-btn>
-        <v-btn color="green darken-1" text @click="">
-          Approve
-        </v-btn>
+        <v-btn color="green darken-1" text @click=""> Approve </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -292,6 +299,7 @@
 
 <!-- <v-img width="500" src="../../../../../../backend/selectedFile1"></v-img> -->
 <script>
+import jwt from 'jsonwebtoken';
 import axios from "axios";
 import { getApplicants } from "../../../services/BackendApi.js";
 import FormSheet from "../../../components/Application/FormSheet";
@@ -331,10 +339,7 @@ export default {
         { title: "Status", key: "Status" },
         { title: "IMG", key: "Selected_File1" },
         { title: "ID", key: "id" },
-        { title: "Last Name", key: "Last_Name", width: "140px" },
-        { title: "First Name", key: "First_Name", width: "140px" },
-        { title: "Middle Name", key: "Middle_Name" },
-        { title: "Name Extension", key: "Name_Extension" },
+        { title: "Full Name", key: "FullName", width: "200px" },
         { title: "Sex", key: "Sex" },
         { title: "Bdate", key: "Bdate" },
         { title: "Age", key: "Age" },
@@ -546,27 +551,34 @@ export default {
   computed: {
     filteredApplicants() {
       // Filter applicants based on the selected status checkboxes and search input
-      return this.applicants.filter((applicant) => {
-        const statusFilter =
-          this.filter.length === 0 || this.filter.includes(applicant.Status);
+      return this.applicants
+        .map((applicant) => {
+          const fullName =
+            `${applicant.First_Name} ${applicant.Middle_Name} ${applicant.Last_Name} ${applicant.Name_Extension}`.trim();
+          return { ...applicant, FullName: fullName };
+        })
+        .filter((applicant) => {
+          const statusFilter =
+            this.filter.length === 0 || this.filter.includes(applicant.Status);
 
-        const searchFilter =
-          !this.search ||
-          Object.values(applicant).some(
-            (value) =>
-              typeof value === "string" &&
-              value.toLowerCase().includes(this.search.toLowerCase())
-          );
+          const searchFilter =
+            !this.search ||
+            Object.values(applicant).some(
+              (value) =>
+                typeof value === "string" &&
+                value.toLowerCase().includes(this.search.toLowerCase())
+            );
 
-        return statusFilter && searchFilter;
-      });
+          return statusFilter && searchFilter;
+        });
     },
+
     formattedSelectedApplicant() {
       console.log("ss");
       if (this.selectedApplicant) {
         // Create an object with the selected applicant's details
         return {
-          id:this.selectedApplicant.id,
+          id: this.selectedApplicant.id,
           lastName: this.selectedApplicant.Last_Name,
           firstName: this.selectedApplicant.First_Name,
           middleName: this.selectedApplicant.Middle_Name,
