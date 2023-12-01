@@ -1,4 +1,3 @@
-<!-- GenericStationSelect.vue -->
 <template>
   <div>
     <v-autocomplete
@@ -11,11 +10,22 @@
       :variant="customVariant"
       :placeholder="customPlaceholder"
       :density="customDensity"
-      @blur="updateValue"
-    ></v-autocomplete>
-
-    <!-- for debugging -->
-    <!-- <p>{{ selectedStation }}</p> -->
+      :readonly="!isEditing"
+    >
+      @blur="updateValue" >
+      <template v-slot:append>
+        <v-slide-x-reverse-transition mode="out-in" v-if="showAppend">
+          <v-icon
+            :key="`icon-${isEditing}`"
+            :color="isEditing ? 'success' : 'info'"
+            :size="isEditing ? '18' : '16'"
+            @click="isEditing = !isEditing"
+          >
+            {{ isEditing ? "mdi-content-save" : "mdi-circle-edit-outline" }}
+          </v-icon>
+        </v-slide-x-reverse-transition>
+      </template>
+    </v-autocomplete>
   </div>
 </template>
 
@@ -25,14 +35,6 @@ import { getStations } from "../../services/BackendApi.js";
 export default {
   props: {
     modelValue: {
-      type: String,
-      default: "",
-    },
-    modelId: {
-      type: String,
-      default: "",
-    },
-    divLabel: {
       type: String,
       default: "",
     },
@@ -52,10 +54,15 @@ export default {
       type: String,
       default: "compact",
     },
+    showAppend: {
+      type: Boolean,
+      default: true,
+    },
   },
   data() {
     return {
       selectedStation: this.modelValue,
+      isEditing: false,
       selectRules: [(v) => !!v || "Station is required"],
       stations: [],
     };
@@ -65,7 +72,6 @@ export default {
   },
   watch: {
     modelValue(newVal) {
-      // Update the selectedStation when the modelValue changes
       this.selectedStation = newVal;
     },
   },

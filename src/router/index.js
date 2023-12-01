@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
-import store from "@/store";
+import { jwtDecode as jwt_decode } from "jwt-decode";
 import Solo from "../layouts/Solo";
 import Main from "../layouts/Main";
 import StudNav from "../layouts/StudNav";
@@ -22,36 +22,52 @@ const routes = [
     component: HomeView,
   },
   {
-    path: "/admin",
+    path: "/admin/applicants",
+    name: "caManageApplicants",
     component: Main,
-
+    meta: { requiredRoles: ["1"] },
     children: [
       {
-        path: "dashboard",
-        name: "caDashboard",
-        component: () => import("../views/Admin/centralAdmin/caDashboard.vue"),
-      },
-      {
-        path: "applicants",
-        name: "caManageApplicants",
+        path: "",
         component: () =>
           import("../views/Admin/centralAdmin/caManageApplicants.vue"),
       },
+    ],
+  },
+  {
+    path: "/admin/accounts",
+    name: "caManageAccounts",
+    component: Main,
+    meta: { requiredRoles: ["1"] },
+    children: [
       {
-        path: "accounts",
-        name: "caManageAccounts",
+        path: "",
         component: () =>
           import("../views/Admin/centralAdmin/caManageAccounts.vue"),
       },
+    ],
+  },
+  {
+    path: "/admin/stations",
+    name: "caManageStation",
+    component: Main,
+    meta: { requiredRoles: ["1"] },
+    children: [
       {
-        path: "stations",
-        name: "caManageStation",
+        path: "",
         component: () =>
           import("../views/Admin/centralAdmin/caManageStation.vue"),
       },
+    ],
+  },
+  {
+    path: "/admin/courses",
+    name: "caManageCourses",
+    component: Main,
+    meta: { requiredRoles: ["1"] },
+    children: [
       {
-        path: "courses",
-        name: "caManageCourses",
+        path: "",
         component: () =>
           import("../views/Admin/centralAdmin/caManageCourse.vue"),
       },
@@ -61,6 +77,7 @@ const routes = [
     path: "/application",
     name: "application",
     component: Solo,
+
     children: [
       {
         path: "",
@@ -69,12 +86,13 @@ const routes = [
     ],
   },
   {
-    path: "/student",
+    path: "/student/home",
+    name: "studentHome",
     component: StudNav,
+
     children: [
       {
-        path: "home",
-        name: "studentHome",
+        path: "",
         component: () => import("../views/Student/Home.vue"),
       },
     ],
@@ -92,34 +110,17 @@ router.beforeEach((to, from, next) => {
 
   // Check if the route requires roles
   if (requiredRoles) {
-    // Get user information from the Vuex store
-    const isLoggedIn = store.getters.isLoggedIn;
-    const userRoles = store.getters.userRole;
-
-    console.log("isLoggedIn:", isLoggedIn);
-    console.log("userRoles:", userRoles);
-    console.log("requiredRoles:", requiredRoles);
-    console.log(
-      "hasRequiredRoles:",
-      hasRequiredRoles(userRoles, requiredRoles)
-    );
+    const userRoles = getUserRoles();
 
     // Check if the user is logged in
-    if (!isLoggedIn) {
+    if (!userRoles.length) {
       // Redirect to the login page or handle the scenario where the user is not logged in
       next("/login");
       return;
     }
 
-    // Check if userRoles is an array and has the required roles
-    if (
-      Array.isArray(userRoles) &&
-      hasRequiredRoles(userRoles, requiredRoles)
-    ) {
-      // Continue to the next route
-      next();
-      return;
-    } else {
+    // Check if the user has the required roles
+    if (!hasRequiredRoles(userRoles, requiredRoles)) {
       // Redirect to unauthorized page or show an error message
       next("/unauthorized");
       return;
@@ -130,15 +131,30 @@ router.beforeEach((to, from, next) => {
   next();
 });
 
+function getUserRoles() {
+  const token = localStorage.getItem("jwt_token");
+
+  if (!token) {
+    console.error("JWT token not found.");
+    return [];
+  }
+
+  try {
+    const decodedToken = jwt_decode(token);
+
+    // Ensure that userRoles is an array
+    return Array.isArray(decodedToken.role)
+      ? decodedToken.role
+      : [decodedToken.role];
+  } catch (error) {
+    console.error("Error decoding token:", error);
+    return [];
+  }
+}
+
 function hasRequiredRoles(userRoles, requiredRoles) {
-  // Ensure userRoles is either an array or a single value
-  const rolesArray = Array.isArray(userRoles) ? userRoles : [userRoles];
-
-  // Convert requiredRoles to a plain array (not necessary if it's already an array)
-  const requiredRolesArray = Array.from(requiredRoles);
-
-  // Check if there is any intersection between rolesArray and requiredRolesArray using strict equality
-  return rolesArray.some((role) => requiredRolesArray.includes(role));
+  // Check if the user has at least one of the required roles
+  return requiredRoles.some((role) => userRoles.includes(role));
 }
 
 export default router;

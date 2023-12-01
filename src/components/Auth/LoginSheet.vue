@@ -157,7 +157,7 @@ export default {
     email: "",
     password: "",
     emailError: null,
-    passwordError: null,
+    passwordError: "",
     loading: false,
   }),
   methods: {
@@ -264,10 +264,11 @@ export default {
             this.handleUserRole(userRole);
           } else {
             // Display the error message returned from the server
-            this.passwordError = response.data.error;
+            this.passwordError = response.data.error || "Account not active";
+            console.log(response.data.error);
           }
         } catch (error) {
-          // Handle errors
+          this.passwordError = "Account not active";
         } finally {
           this.loading = false;
         }

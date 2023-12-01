@@ -12,17 +12,18 @@
     <v-card>
       <v-card-text>
         <div class="mx-auto text-center">
-          <v-avatar color="brown">
-            <span class="text-h5">{{ user.initials }}</span>
-          </v-avatar>
+          <v-avatar color="brown" :image="getFullImageUrl()"> </v-avatar>
           <h3>{{ user.fullName }}</h3>
           <p class="text-caption mt-1">
             {{ user.email }}
           </p>
           <v-divider class="my-3"></v-divider>
-          <v-btn rounded variant="text"> Edit Account </v-btn>
+          <router-link to="/edit-account">
+            <v-btn variant="text">Edit Account</v-btn>
+          </router-link>
           <v-divider class="my-3"></v-divider>
-          <v-btn rounded variant="text"> Disconnect </v-btn>
+
+          <v-btn variant="text" @click="logout">Logout</v-btn>
         </div>
       </v-card-text>
     </v-card>
@@ -61,6 +62,17 @@ export default {
   methods: {
     getFullImageUrl() {
       return this.backendUrl + this.userProfile;
+    },
+    logout() {
+      // Perform logout actions here
+      // For example, clear the token from localStorage
+      localStorage.removeItem("jwt_token");
+
+      // Clear user information from Vuex store
+      this.$store.dispatch("logout");
+
+      // Redirect to the login page and clear navigation history
+      this.$router.push({ path: "/login" }).catch(() => {});
     },
   },
 };

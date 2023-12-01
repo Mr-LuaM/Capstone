@@ -65,17 +65,12 @@ export async function getStationAdminsWithStation() {
   }
 }
 
-export async function getRoles() {
+export async function getRoles(userRole) {
   try {
-    const secureTokenResponse = await axios.get(
-      "generateSecureToken/" + id
-    );
-    const secureToken = secureTokenResponse.data;
-   
-    const roles = await axios.get("getRoles");
+    const roles = await axios.post("getRoles", { userRole });
     return roles.data; // Return the data
   } catch (error) {
-    console.log(error);
+    console.error("Failed to fetch roles:", error);
     throw error; // Rethrow the error
   }
 }

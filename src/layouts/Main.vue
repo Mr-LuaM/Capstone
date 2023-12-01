@@ -1,9 +1,18 @@
 <template>
   <v-app>
     <!-- Admin Page Header -->
-    <v-app-bar app class="rounded-b-m" color="primary" style="background: linear-gradient(90deg, hsla(210, 100%, 20%, 1) 85%, hsla(350, 85%, 42%, 1) 91%);">
-
-
+    <v-app-bar
+      app
+      class="rounded-b-m"
+      color="primary"
+      style="
+        background: linear-gradient(
+          90deg,
+          hsla(210, 100%, 20%, 1) 85%,
+          hsla(350, 85%, 42%, 1) 91%
+        );
+      "
+    >
       <v-app-bar-nav-icon @click="toggleSidebar"></v-app-bar-nav-icon>
       <v-toolbar-title class="ml-2">Admin Dashboard</v-toolbar-title>
       <v-spacer></v-spacer>
@@ -21,16 +30,13 @@
         v-model="sidebarOpen"
         class="elevation-12 rounded-e"
       >
-
         <v-img
-         
           width="300"
           :aspect-ratio="1"
           src="@/assets/img/logo/logo.jpg"
           cover
-        
         ></v-img>
-      
+
         <v-list density="comfortable" nav>
           <v-list-item
             link
