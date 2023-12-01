@@ -10,22 +10,8 @@
       :variant="customVariant"
       :placeholder="customPlaceholder"
       :density="customDensity"
-      :readonly="!isEditing"
       @blur="updateValue"
-    >
-      <template v-slot:append>
-        <v-slide-x-reverse-transition mode="out-in">
-          <v-icon
-            :key="`icon-${isEditing}`"
-            :color="isEditing ? 'success' : 'info'"
-            :size="isEditing ? '18' : '16'"
-            @click="isEditing = !isEditing"
-          >
-            {{ isEditing ? "mdi-content-save" : "mdi-circle-edit-outline" }}
-          </v-icon>
-        </v-slide-x-reverse-transition>
-      </template>
-    </v-autocomplete>
+    ></v-autocomplete>
 
     <!-- for debugging -->
     <!-- <p>{{ selectedRole }}</p> -->
@@ -68,7 +54,6 @@ export default {
   },
   data() {
     return {
-      isEditing: false,
       selectedRole: this.modelValue,
       selectRules: [(v) => !!v || "Role is required"],
       roles: [],
@@ -86,14 +71,12 @@ export default {
   methods: {
     async getRoles() {
       try {
-        // Fetch roles from your backend, passing the user role from the store
-        const userRole = this.$store.state.role; // Replace with your actual store path
-        this.roles = await getRoles(userRole);
+        // Fetch roles from your backend
+        this.roles = await getRoles();
       } catch (error) {
         console.error("Failed to fetch roles:", error);
       }
     },
-
     updateValue() {
       // Emit the selected role value to the parent component
       this.$emit("update:modelValue", this.selectedRole);

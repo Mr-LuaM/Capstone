@@ -79,7 +79,17 @@
             <v-list-item-title>Accounts</v-list-item-title>
           </v-list-item>
 
-          <v-divider inset></v-divider>
+          <v-container>
+            <v-divider></v-divider>
+          </v-container>
+          <v-list-item
+            link
+            to="/edit-accounts"
+            :class="{ highlight: isRouteActive('/edit-accounts') }"
+            prepend-icon="mdi-account-edit"
+          >
+            <v-list-item-title>Profile</v-list-item-title>
+          </v-list-item>
           <!-- Add more menu items for different sections -->
         </v-list>
         <template v-slot:append>

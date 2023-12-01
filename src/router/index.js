@@ -22,52 +22,47 @@ const routes = [
     component: HomeView,
   },
   {
-    path: "/admin/applicants",
-    name: "caManageApplicants",
+    path: "/edit-accounts",
+    name: "edit-accounts",
+    component: Main,
+    children: [
+      {
+        path: "",
+        component: () => import("../views/EditAccount.vue"),
+      },
+    ],
+  },
+  {
+    path: "/admin",
     component: Main,
     meta: { requiredRoles: ["1"] },
     children: [
       {
-        path: "",
+        path: "dashboard",
+        name: "caDashboard",
+        component: () => import("../views/Admin/centralAdmin/caDashboard.vue"),
+      },
+      {
+        path: "applicants",
+        name: "caManageApplicants",
         component: () =>
           import("../views/Admin/centralAdmin/caManageApplicants.vue"),
       },
-    ],
-  },
-  {
-    path: "/admin/accounts",
-    name: "caManageAccounts",
-    component: Main,
-    meta: { requiredRoles: ["1"] },
-    children: [
       {
-        path: "",
+        path: "accounts",
+        name: "caManageAccounts",
         component: () =>
           import("../views/Admin/centralAdmin/caManageAccounts.vue"),
       },
-    ],
-  },
-  {
-    path: "/admin/stations",
-    name: "caManageStation",
-    component: Main,
-    meta: { requiredRoles: ["1"] },
-    children: [
       {
-        path: "",
+        path: "stations",
+        name: "caManageStation",
         component: () =>
           import("../views/Admin/centralAdmin/caManageStation.vue"),
       },
-    ],
-  },
-  {
-    path: "/admin/courses",
-    name: "caManageCourses",
-    component: Main,
-    meta: { requiredRoles: ["1"] },
-    children: [
       {
-        path: "",
+        path: "courses",
+        name: "caManageCourses",
         component: () =>
           import("../views/Admin/centralAdmin/caManageCourse.vue"),
       },
@@ -77,7 +72,6 @@ const routes = [
     path: "/application",
     name: "application",
     component: Solo,
-
     children: [
       {
         path: "",
@@ -86,13 +80,12 @@ const routes = [
     ],
   },
   {
-    path: "/student/home",
-    name: "studentHome",
+    path: "/student",
     component: StudNav,
-
     children: [
       {
-        path: "",
+        path: "home",
+        name: "studentHome",
         component: () => import("../views/Student/Home.vue"),
       },
     ],

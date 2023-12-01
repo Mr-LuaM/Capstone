@@ -12,14 +12,14 @@
       :density="customDensity"
       :readonly="!isEditing"
     >
-      @blur="updateValue" >
+      @blur="updateValue"
       <template v-slot:append>
         <v-slide-x-reverse-transition mode="out-in" v-if="showAppend">
           <v-icon
             :key="`icon-${isEditing}`"
             :color="isEditing ? 'success' : 'info'"
             :size="isEditing ? '18' : '16'"
-            @click="isEditing = !isEditing"
+            @click="toggleEdit"
           >
             {{ isEditing ? "mdi-content-save" : "mdi-circle-edit-outline" }}
           </v-icon>
@@ -58,6 +58,10 @@ export default {
       type: Boolean,
       default: true,
     },
+    stationAdminId: {
+      type: String,
+      default: "",
+    },
   },
   data() {
     return {
@@ -85,6 +89,16 @@ export default {
     },
     updateValue() {
       this.$emit("update:modelValue", this.selectedStation);
+      console.log(this.selectedStation);
+    },
+    toggleEdit() {
+      this.isEditing = !this.isEditing;
+      if (!this.isEditing) {
+        this.$emit("stationSaved", {
+          station: this.selectedStation,
+          stationAdminId: this.stationAdminId,
+        });
+      }
     },
   },
 };

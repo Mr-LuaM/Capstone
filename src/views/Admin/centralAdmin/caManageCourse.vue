@@ -2,7 +2,7 @@
   <v-container fluid class="rounded-lg bg-surface">
     <v-card flat>
       <v-card-title class="d-flex align-center pe-2 bg-primary">
-        <v-icon icon="mdi-account"></v-icon> &nbsp; Manage Course
+        <v-icon icon="mdi-book-open-page-variant"></v-icon> &nbsp; Manage Course
 
         <v-spacer></v-spacer>
 

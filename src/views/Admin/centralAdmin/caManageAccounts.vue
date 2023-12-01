@@ -67,6 +67,15 @@
                       @click="nextPage"
                     ></v-btn>
                   </div>
+                  <v-col cols="auto">
+                    <v-btn
+                      variant="flat"
+                      @click="dialog = true"
+                      color="secondary"
+                    >
+                      Add New
+                    </v-btn>
+                  </v-col>
                 </div>
               </h4>
             </template>
@@ -212,7 +221,8 @@
                               </v-col>
                               <!-- Add more columns as needed -->
                             </v-row>
-
+                            <!-- {{ item.raw.StationAdmin_ID }}
+                            {{ item.raw.Station_ID }} -->
                             <v-container>
                               <v-divider></v-divider>
                             </v-container>
@@ -221,8 +231,9 @@
                               v-model="item.raw.Station_Name"
                               customDensity="compact"
                               customVariant="solo-inverted"
-                              :showAppend="true"
-                            />
+                              :stationAdminId="item.raw.StationAdmin_ID"
+                              @stationSaved="openConfirmDialogs"
+                            ></StationSelection>
                           </div>
                         </v-expand-transition>
                       </v-list-item-content>
@@ -251,6 +262,28 @@
       </v-window>
     </v-card>
   </v-container>
+  <v-dialog v-model="dialog" persistent width="800">
+    <v-card>
+      <v-card-title>
+        <span class="text-h5">{{ formTitle }}</span>
+      </v-card-title>
+      <v-card-text>
+        <v-container>
+          <v-form ref="form" @submit.prevent="submit"> </v-form>
+        </v-container>
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn color="secondary" variant="plain" @click="dialog = false">
+          Close
+        </v-btn>
+
+        <v-btn variant="text" @click="addStationAdmin" color="primary">
+          Add Station Admin
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
   <infoSnack ref="snackbar" />
   <confirmationModal
     ref="confirmationModal"
@@ -265,6 +298,7 @@ import { getStationAdminsWithStation } from "@/services/BackendApi"; // Assuming
 export default {
   data() {
     return {
+      dialog: false,
       tab: null,
       StationAdmins: [], // Initialize as an empty array
       itemsPerPage: 4,
@@ -320,15 +354,38 @@ export default {
         // Handle errors as needed
       }
     },
+    openConfirmDialogs({ station, stationAdminId }) {
+      console.log("StationID:", station);
+      console.log("StationAdminID:", stationAdminId);
+      this.$refs.confirmationModal.dialog = true;
+      this.$refs.confirmationModal.confirmAction = () =>
+        this.changeAdminStation(station, stationAdminId);
+    },
+    async changeAdminStation(station, stationAdminId) {
+      try {
+        const formData = new FormData();
+        formData.append("Station_ID", station);
+        formData.append("Station_Admin_ID", stationAdminId);
 
-    onButtonClick() {
-      // Handle button click
-    },
-    onFileChanged() {
-      // Handle file change
-    },
-    saveBio() {
-      // Handle saving bio
+        // Make the Axios POST request
+        const response = await axios.post("changeAdminStation", formData);
+
+        if (response.data.success === true) {
+          this.loadData();
+          // Show a success alert or perform other success-related actions here
+          this.$refs.snackbar.openSnackbar(response.data.message, "success");
+          this.$refs.confirmationModal.dialog = false;
+        } else {
+          // Show the error Snackbar
+          this.$refs.snackbar.openSnackbar(response.data.message, "error");
+        }
+
+        // Handle the response if needed
+        console.log("Server response:", response.data);
+      } catch (error) {
+        this.$refs.snackbar.openSnackbar("No changes occured", "error");
+        this.$refs.confirmationModal.dialog = false;
+      }
     },
 
     onClickSeeAll() {

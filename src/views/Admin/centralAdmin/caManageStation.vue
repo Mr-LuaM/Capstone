@@ -2,7 +2,7 @@
   <v-container fluid class="rounded-lg bg-surface">
     <v-card flat>
       <v-card-title class="d-flex align-center pe-2 bg-primary">
-        <v-icon icon="mdi-lo"></v-icon> &nbsp; Manage Station
+        <v-icon icon="mdi-map-marker"></v-icon> &nbsp; Manage Station
 
         <v-spacer></v-spacer>
 
