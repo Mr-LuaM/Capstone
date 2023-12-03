@@ -452,16 +452,10 @@
                               v-model="item.raw.Station_Name"
                               customDensity="compact"
                               customVariant="solo-inverted"
+                              customLabel=""
                               :stationAdminId="item.raw.StationAdmin_ID"
                               @stationSaved="openConfirmDialogs"
                             ></StationSelection>
-                            <CourseSelection
-                              v-model="item.raw.Course_Name"
-                              customDensity="compact"
-                              customVariant="solo-inverted"
-                              :stationAdminId="item.raw.Course_ID"
-                              @stationSaved="openConfirmDialogs"
-                            />
                           </div>
                         </v-expand-transition>
                       </v-list-item-content>
@@ -537,6 +531,14 @@ export default {
     this.getTeacherAssignmentsDetails();
   },
   methods: {
+    async updateCourses() {
+      // Fetch courses based on the selected station
+      const response = await fetch(
+        `getCoursesByStation/${this.selectedStation}`
+      );
+      const data = await response.json();
+      this.courses = data;
+    },
     async loadData() {
       console.log("Loading data...");
       this.loading = true;

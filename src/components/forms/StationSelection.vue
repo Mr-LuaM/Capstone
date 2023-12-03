@@ -11,8 +11,8 @@
       :placeholder="customPlaceholder"
       :density="customDensity"
       :readonly="!isEditing"
-    >
       @blur="updateValue"
+    >
       <template v-slot:append>
         <v-slide-x-reverse-transition mode="out-in" v-if="showAppend">
           <v-icon
@@ -66,7 +66,7 @@ export default {
   data() {
     return {
       selectedStation: this.modelValue,
-      isEditing: false,
+      isEditing: !this.showAppend, // Set isEditing to true when showAppend is false
       selectRules: [(v) => !!v || "Station is required"],
       stations: [],
     };

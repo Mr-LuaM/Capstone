@@ -6,6 +6,7 @@ import store from "./store";
 import { loadFonts } from "./plugins/webfontloader";
 import "../src/assets/css/main.css";
 import axios from "axios";
+import VueApexCharts from "vue3-apexcharts";
 axios.defaults.baseURL = "http://backend.test/";
 
 // Global components
@@ -88,4 +89,4 @@ app.component("warning", warning);
 app.component("success", success);
 app.component("confirmationModal", confirmationModal);
 
-app.use(store).use(router).use(vuetify).mount("#app");
+app.use(store).use(router).use(vuetify).use(VueApexCharts).mount("#app");
