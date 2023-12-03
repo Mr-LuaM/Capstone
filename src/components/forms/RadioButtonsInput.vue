@@ -9,6 +9,7 @@
       :inline="inline"
       @input="updateSelectedValue"
       :rules="validationRules"
+      :readonly="readonly"
     >
       <v-radio
         v-for="(option, index) in options"
@@ -23,6 +24,10 @@
 <script>
 export default {
   props: {
+    readonly: {
+      type: Boolean,
+      default: false,
+    },
     modelValue: {
       // Rename value to modelValue
       type: String,

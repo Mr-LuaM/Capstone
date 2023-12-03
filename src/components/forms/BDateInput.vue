@@ -14,6 +14,7 @@
     @input="updateSelectedDate"
     :rules="dateRules"
     :persistent-hint="customPersistentHint"
+    :readonly="readonly"
   ></v-text-field>
 </template>
 
@@ -66,6 +67,10 @@ export default {
       // Define maximum accepted date
       type: String,
       default: "2100-12-31",
+    },
+    readonly: {
+      type: Boolean,
+      default: false,
     },
   },
   data() {

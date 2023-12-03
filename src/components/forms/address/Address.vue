@@ -10,6 +10,7 @@
     :placeholder="customPlaceholder"
     :density="customDensity"
     :hint="customHint"
+    :readonly="readonly"
     @input="updateValue"
     :append-inner-icon="customAppendInnerIcon"
   ></v-text-field>
@@ -18,6 +19,10 @@
 <script>
 export default {
   props: {
+    readonly: {
+      type: Boolean,
+      default: false,
+    },
     modelValue: {
       type: String,
       default: "",
@@ -50,9 +55,9 @@ export default {
       type: String,
       default: "Region, Province, City, Brgy, House Number (if applicable)",
     },
-    customAppendInnerIcon:{
+    customAppendInnerIcon: {
       type: String,
-      default:"mdi-map-marker"
+      default: "mdi-map-marker",
     },
   },
   data() {

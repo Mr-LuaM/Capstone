@@ -11,6 +11,8 @@
     :variant="customVariant"
     :placeholder="customPlaceholder"
     :density="customDensity"
+    :readonly="readonly"
+    s
     @blur="updateValue"
   ></v-autocomplete>
 </template>
@@ -20,6 +22,10 @@ import axios from "axios";
 
 export default {
   props: {
+    readonly: {
+      type: Boolean,
+      default: false,
+    },
     modelValue: {
       type: String,
       default: "", // You can set a default value if needed

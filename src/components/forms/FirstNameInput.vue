@@ -8,6 +8,7 @@
     :placeholder="customPlaceholder"
     :density="customDensity"
     @input="updateValue"
+    :readonly="readonly"
   ></v-text-field>
 </template>
 
@@ -17,7 +18,7 @@ export default {
   props: {
     modelValue: {
       type: String,
-      default: "Default Value",
+      default: "",
     },
     divLabel: {
       type: String,
@@ -38,6 +39,10 @@ export default {
     customDensity: {
       type: String,
       default: "compact",
+    },
+    readonly: {
+      type: Boolean,
+      default: false,
     },
   },
   data() {

@@ -106,12 +106,13 @@
       </v-window>
 
       <v-card-actions class="mt-8 mb-0 pa-0">
-        <a
+        <router-link
           v-if="step === 1"
-          href="#"
+          to="/createAccount"
           class="d-inline-block text-blue-accent-4 text-decoration-none font-weight-medium text-body-2"
-          >Create An Account</a
+          >Create An Account</router-link
         >
+
         <v-btn v-if="step > 1" variant="text" @click="step--"> Back </v-btn>
         <v-spacer></v-spacer>
         <v-btn

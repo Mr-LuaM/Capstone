@@ -32,6 +32,7 @@ import GenericAutocomplete from "./components/forms/Generic/GenericAutocomplete.
 import GenericTextField from "./components/forms/Generic/GenericTextField.vue";
 import GenericTextArea from "./components/forms/Generic/GenericTextArea.vue";
 import GenericNumber from "./components/forms/Generic/GenericNumber.vue";
+import ImageInput from "./components/forms/ImageInput.vue";
 //address
 import Address from "./components/forms/address/Address.vue";
 
@@ -73,7 +74,7 @@ app.component("GenericAutocomplete", GenericAutocomplete);
 app.component("GenericTextField", GenericTextField);
 app.component("GenericTextArea", GenericTextArea);
 app.component("GenericNumber", GenericNumber);
-
+app.component("ImageInput", ImageInput);
 //address
 app.component("Address", Address);
 

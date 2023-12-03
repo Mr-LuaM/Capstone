@@ -1,32 +1,34 @@
 <template>
-  <div class="text-subtitle-1 text-medium-emphasis">{{ divLabel }}</div>
-  <v-text-field
+  <v-file-input
     v-model="internalValue"
-    :rules="nameRules"
     :label="customLabel"
+    :density="customDensity"
     :variant="customVariant"
     :placeholder="customPlaceholder"
-    :density="customDensity"
+    :rules="fileRules"
     :readonly="readonly"
+    :append-inner-icon="appendInnerIcon"
+    prepend-icon=""
+    accept="image/*"
     @input="updateValue"
-  ></v-text-field>
+  ></v-file-input>
 </template>
 
 <script>
 export default {
-  name: "LastNameInput",
+  name: "FileInput",
   props: {
     modelValue: {
-      type: String,
-      default: "",
+      type: [Array, File],
+      default: () => [],
     },
     divLabel: {
       type: String,
-      default: "Last Name",
+      default: "File Input",
     },
     customLabel: {
       type: String,
-      default: "",
+      default: "Profile Picture",
     },
     customVariant: {
       type: String,
@@ -34,7 +36,7 @@ export default {
     },
     customPlaceholder: {
       type: String,
-      default: "Enter Last Name",
+      default: "Choose a file...",
     },
     customDensity: {
       type: String,
@@ -44,16 +46,15 @@ export default {
       type: Boolean,
       default: false,
     },
+    appendInnerIcon: {
+      type: String,
+      default: "mdi-camera",
+    },
   },
   data() {
     return {
       internalValue: this.modelValue,
-      nameRules: [
-        (v) => !!v || "Last name is required",
-        (v) =>
-          (v && v.length >= 2) || "Last name should be at least 2 characters",
-        (v) => v.length <= 50 || "Last name should not exceed 50 characters", // Limit the length
-      ],
+      fileRules: [(v) => v.length <= 1 || "Select only one file"],
     };
   },
   watch: {

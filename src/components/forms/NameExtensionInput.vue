@@ -9,6 +9,7 @@
     :density="customDensity"
     :persistent-hint="customPersistentHint"
     :hint="customHint"
+    :readonly="readonly"
     @input="updateValue"
     @click:append-inner="visible = !visible"
   >
@@ -27,6 +28,10 @@
 export default {
   name: "NameExtensionInput",
   props: {
+    readonly: {
+      type: Boolean,
+      default: false,
+    },
     modelValue: {
       type: String,
       default: "",

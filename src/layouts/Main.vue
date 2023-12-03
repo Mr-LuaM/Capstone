@@ -3,7 +3,7 @@
     <!-- Admin Page Header -->
     <v-app-bar
       app
-      class="rounded-b-m"
+      class="rounded-b-m sticky"
       color="primary"
       style="
         background: linear-gradient(
@@ -78,14 +78,22 @@
           >
             <v-list-item-title>Accounts</v-list-item-title>
           </v-list-item>
+          <v-list-item
+            link
+            to="/admin/announcements"
+            :class="{ highlight: isRouteActive('/admin/announcements') }"
+            prepend-icon="mdi-post"
+          >
+            <v-list-item-title>Announcements</v-list-item-title>
+          </v-list-item>
 
           <v-container>
             <v-divider></v-divider>
           </v-container>
           <v-list-item
             link
-            to="/edit-accounts"
-            :class="{ highlight: isRouteActive('/edit-accounts') }"
+            to="/admin/edit-accounts"
+            :class="{ highlight: isRouteActive('/admin/edit-accounts') }"
             prepend-icon="mdi-account-edit"
           >
             <v-list-item-title>Profile</v-list-item-title>

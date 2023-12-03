@@ -10,6 +10,7 @@
       :density="customDensity"
       append-inner-icon="mdi-cellphone"
       :persistent-hint="customPersistentHint"
+      :readonly="readonly"
       :hint="customHint"
       @input="updateValue"
     ></v-text-field>
@@ -19,6 +20,10 @@
 <script>
 export default {
   props: {
+    readonly: {
+      type: Boolean,
+      default: false,
+    },
     modelValue: {
       type: String,
       default: "",

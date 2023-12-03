@@ -7,6 +7,7 @@
     :variant="customVariant"
     :placeholder="customPlaceholder"
     :density="customDensity"
+    :readonly="readonly"
     @input="updateValue"
   >
     <template v-slot:append>
@@ -25,6 +26,10 @@
 export default {
   name: "MiddleNameInput",
   props: {
+    readonly: {
+      type: Boolean,
+      default: false,
+    },
     modelValue: {
       type: String,
       default: "Default Value",

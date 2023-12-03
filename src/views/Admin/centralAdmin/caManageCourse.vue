@@ -225,6 +225,7 @@
                           :model-value="station.Station_ID"
                           variant=""
                           density="compact"
+                          :showAppend="false"
                         />
                       </td>
 

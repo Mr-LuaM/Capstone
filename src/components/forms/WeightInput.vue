@@ -12,12 +12,17 @@
     :placeholder="customPlaceholder"
     :suffix="customSuffix"
     @blur="updateValue"
+    :readonly="readonly"
   ></v-text-field>
 </template>
 
 <script>
 export default {
   props: {
+    readonly: {
+      type: Boolean,
+      default: false,
+    },
     modelValue: {
       type: String,
       default: "", // You can set a default value if needed

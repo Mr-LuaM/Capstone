@@ -74,3 +74,22 @@ export async function getRoles(userRole) {
     throw error; // Rethrow the error
   }
 }
+
+export async function getAnnouncements() {
+  try {
+    const announcements = await axios.get("getAnnouncements");
+    return announcements.data; // Return the data
+  } catch (error) {
+    console.error("Failed to fetch roles:", error);
+    throw error; // Rethrow the error
+  }
+}
+export async function getTeacherAssignmentsDetails() {
+  try {
+    const teachers = await axios.get("getTeacherAssignmentsDetails");
+    return teachers.data; // Return the data
+  } catch (error) {
+    console.error("Failed to fetch roles:", error);
+    throw error; // Rethrow the error
+  }
+}

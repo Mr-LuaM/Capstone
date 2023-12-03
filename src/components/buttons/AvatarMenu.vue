@@ -18,9 +18,10 @@
             {{ user.email }}
           </p>
           <v-divider class="my-3"></v-divider>
-          <router-link to="/edit-account">
+          <router-link :to="`${getParentRoute()}/edit-accounts`">
             <v-btn variant="text">Edit Account</v-btn>
           </router-link>
+
           <v-divider class="my-3"></v-divider>
 
           <v-btn variant="text" @click="logout">Logout</v-btn>
@@ -73,6 +74,15 @@ export default {
 
       // Redirect to the login page and clear navigation history
       this.$router.push({ path: "/login" }).catch(() => {});
+    },
+    getParentRoute() {
+      // Access the current route
+      const currentRoute = this.$route;
+
+      // Extract the parent route by removing the last segment
+      const parentRoute = currentRoute.path.split("/").slice(0, -1).join("/");
+
+      return parentRoute;
     },
   },
 };

@@ -4,6 +4,7 @@ import Solo from "../layouts/Solo";
 import Main from "../layouts/Main";
 import StudNav from "../layouts/StudNav";
 import HomeView from "../views/HomeView.vue";
+import createAccount from "../views/CreateAccount.vue";
 
 const routes = [
   {
@@ -17,21 +18,16 @@ const routes = [
     component: HomeView,
   },
   {
+    path: "/createAccount",
+    name: "createAccount",
+    component: createAccount,
+  },
+  {
     path: "/auth/verify/:verificationCode",
     name: "verify-account",
     component: HomeView,
   },
-  {
-    path: "/edit-accounts",
-    name: "edit-accounts",
-    component: Main,
-    children: [
-      {
-        path: "",
-        component: () => import("../views/EditAccount.vue"),
-      },
-    ],
-  },
+
   {
     path: "/admin",
     component: Main,
@@ -65,6 +61,18 @@ const routes = [
         name: "caManageCourses",
         component: () =>
           import("../views/Admin/centralAdmin/caManageCourse.vue"),
+      },
+      {
+        path: "announcements",
+        name: "caAnnouncement",
+        component: () =>
+          import("../views/Admin/centralAdmin/caAnnouncement.vue"),
+      },
+      {
+        path: "edit-accounts",
+        name: "caEditAccounts",
+        component: () =>
+          import("../views/Admin/centralAdmin/caEditAccount.vue"),
       },
     ],
   },

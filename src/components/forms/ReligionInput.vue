@@ -14,6 +14,7 @@
     :placeholder="customPlaceholder"
     :density="customDensity"
     @blur="updateValue"
+    :readonly="readonly"
   ></v-autocomplete>
   <!-- </v-col> -->
   <!-- <v-col sm="6">
@@ -32,6 +33,10 @@
 <script>
 export default {
   props: {
+    readonly: {
+      type: Boolean,
+      default: false,
+    },
     modelValue: {
       type: String,
       default: "", // You can set a default value if needed
