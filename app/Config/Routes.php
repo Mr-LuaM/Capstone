@@ -56,6 +56,11 @@ $routes->get('/getTeacherAssignmentsDetails', 'MainAdminController::getTeacherAs
 $routes->post('toggleTeacherStatus/(:num)', 'MainAdminController::toggleTeacherStatus/$1');
 
 
+$routes->post('updateStationAdminDetails', 'StationAdminController::updateStationAdminDetails');
+$routes->post('getStationAdminEditDetails', 'StationAdminController::getStationAdminEditDetails');
+$routes->post('getStationDetailsperStation', 'StationAdminController::getStationDetailsperStation');
+$routes->post('saveStationChanges', 'StationAdminController::saveStationChanges');
+
 
 
 

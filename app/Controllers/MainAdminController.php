@@ -11,19 +11,12 @@ class MainAdminController extends BaseController {
 
     public function getApplicants() {
         $data = $this->applicants->findAll();
-
         if(empty($data)) {
-            return $this->respond([]);
+            return $this->failNotFound('No Courses Found');
         }
-
         return $this->respond($data);
+
     }
-
-    // Define constants for role IDs
-    const ROLE_STUDENT = 5;
-
-    // Other class methods...
-
     public function approve() {
         try {
             $this->db->transStart(); // Start a transaction
@@ -62,11 +55,9 @@ class MainAdminController extends BaseController {
                 $existingStudent = $this->students->where('User_ID', $existingUser['User_ID'])->first();
 
                 if(!$existingStudent) {
-                    // Define user role using a constant
+                    // Define user role
                     $userFields = [
-                        'Role_ID' => self::ROLE_STUDENT,
-                        'VerificationCode' => md5(uniqid(rand(), true)),
-                        // Add other user fields as needed
+                        'Role_ID' => 5,  // Set the role ID as needed
                     ];
 
                     // Update existing user information
@@ -74,6 +65,8 @@ class MainAdminController extends BaseController {
 
                     $userId = $existingUser['User_ID'];
 
+                    // $studID = $this->students->where('User_ID', $userId)->first();
+                    // return $this->respond($studID, 200);
                     // Insert student data
                     $studentFields = [
                         'User_ID' => $userId,
@@ -93,10 +86,11 @@ class MainAdminController extends BaseController {
                     ];
 
                     $this->students->insert($studentFields);
-
+                    $studID = $this->students->where("User_ID", $userId)->first();
                     // Update applicant status to 'approved'
                     $applicantId = $data['id']; // Adjust this based on your data structure
                     $this->applicants->update($applicantId, ['Status' => 'approved']);
+
 
                     $course = $this->courses->where('Course_Name', $data['approvedCourse'])->first();
                     $courseID = $course['Course_ID'];
@@ -104,17 +98,18 @@ class MainAdminController extends BaseController {
                     // Get the Station_ID based on the station name
                     $station = $this->stations->where('Station_Name', $data['approvedStation'])->first();
                     $stationID = $station['Station_ID'];
-
                     // Assuming you have a foreign key relationship in the database
                     // Assign the student to a specific course and station
                     $enrollmentFields = [
-                        'Stud_ID' => $this->students->where("User_ID", $userId)->first()['Stud_ID'], // using the applicant ID as Stud_ID
+                        'Stud_ID' => $studID['Stud_ID'], // using the applicant ID as Stud_ID
                         'Course_ID' => intval($courseID),
                         'Station_ID' => intval($stationID),
                         // ... (other enrollment fields)
                     ];
 
+
                     $this->enrollments->insert($enrollmentFields);
+
                 } else {
                     // Return an error response or handle it appropriately
                     return $this->fail('User is already a student.', 400);
@@ -136,7 +131,6 @@ class MainAdminController extends BaseController {
 
 
 
-
     public function reject($id) {
         try {
             // Validate the input id
@@ -147,8 +141,9 @@ class MainAdminController extends BaseController {
             // Fetch the secure token from the request
             $secureToken = $this->request->getPost('secureToken');
 
+
             // Validate the secure token
-            if(!$this->secureTokenValidator->validate($id, $secureToken)) {
+            if(!$this->validateSecureToken($id, $secureToken)) {
                 return $this->fail('Invalid secure token.', 400);
             }
 
@@ -160,7 +155,6 @@ class MainAdminController extends BaseController {
                 return $this->fail('Applicant not found.', 404);
             }
 
-            // Validate the applicant's status
             if($applicant['Status'] !== 'pending') {
                 // Return an error response or handle it appropriately
                 return $this->fail('Applicant status must be "Pending" to reject.', 400);
@@ -174,11 +168,9 @@ class MainAdminController extends BaseController {
             return $this->respond('Applicant rejected successfully.', 200);
         } catch (\Exception $e) {
             // Handle exceptions here
-            log_message('error', $e->getMessage());
             return $this->fail('An error occurred.', 500);
         }
     }
-
 
     public function editStation() {
         $request = service('request');
@@ -189,7 +181,7 @@ class MainAdminController extends BaseController {
             'Station_Name' => 'required|string',
             'Location' => 'required|string',
             'status' => 'required|string',
-            'Courses_Offered.*.Course_ID' => 'required|integer',
+            'Courses_Offered.*.Course_ID' => 'required|integer', // Assuming Course_ID is the ID
         ]);
 
         if(!$this->validation->withRequest($this->request)->run()) {
@@ -214,14 +206,37 @@ class MainAdminController extends BaseController {
                 'status' => $status,
             ];
 
-            // Update the station using the model method
-            $this->stations->updateStation($stationId, $stationData);
+            $this->stations->update($stationId, $stationData);
 
-            // Get existing courses associated with the station
-            $existingCourses = $this->stationCourses->getStationCourses($stationId);
+            // Get the existing courses associated with the station
+            $existingCourses = $this->stationCourses->where('Station_ID', $stationId)->findAll();
+            // return $this->respond($existingCourses);
+            // Extract the Course_ID values from existing courses
+            $existingCourseIds = array_column($existingCourses, 'Course_ID');
 
-            // Update the courses using model methods
-            $this->updateStationCourses($stationId, $coursesOffered, $existingCourses);
+
+            // Compare the existing courses with the courses received in the form
+            foreach($coursesOffered as $courseData) {
+                $courseId = $courseData['Course_ID']; // Assuming Course_ID is the ID
+
+                if(!in_array($courseId, $existingCourseIds)) {
+                    // Course is not linked to the station, so add it
+                    $courseData['Station_ID'] = $stationId;
+                    $this->stationCourses->insert($courseData);
+                }
+            }
+
+            // Check for removed courses
+            foreach($existingCourses as $existingCourse) {
+                $existingCourseId = $existingCourse['Course_ID'];
+                $existingStationCourseId = $existingCourse['StationCourse_ID'];
+
+                // Check if the existing course is not present in the received form data
+                if(!in_array($existingCourseId, array_column($coursesOffered, 'Course_ID'))) {
+                    // Course is in the database but not in the form, so remove it
+                    $this->stationCourses->delete(['StationCourse_ID' => $existingStationCourseId]);
+                }
+            }
 
             // Commit the transaction
             $this->db->transCommit();
@@ -231,38 +246,7 @@ class MainAdminController extends BaseController {
             // An error occurred, rollback the transaction
             $this->db->transRollback();
 
-            log_message('error', $e->getMessage()); // Log the error
-
             return $this->respond(['success' => false, 'message' => 'Error editing station']);
-        }
-    }
-
-    // Helper method to update station courses
-    private function updateStationCourses($stationId, $coursesOffered, $existingCourses) {
-        // Extract existing course IDs
-        $existingCourseIds = array_column($existingCourses, 'Course_ID');
-
-        // Compare existing courses with the courses received in the form
-        foreach($coursesOffered as $courseData) {
-            $courseId = $courseData['Course_ID'];
-
-            if(!in_array($courseId, $existingCourseIds)) {
-                // Course is not linked to the station, so add it
-                $courseData['Station_ID'] = $stationId;
-                $this->stationCourses->insertCourse($courseData);
-            }
-        }
-
-        // Check for removed courses
-        foreach($existingCourses as $existingCourse) {
-            $existingCourseId = $existingCourse['Course_ID'];
-            $existingStationCourseId = $existingCourse['StationCourse_ID'];
-
-            // Check if the existing course is not present in the received form data
-            if(!in_array($existingCourseId, array_column($coursesOffered, 'Course_ID'))) {
-                // Course is in the database but not in the form, so remove it
-                $this->stationCourses->deleteCourse($existingStationCourseId);
-            }
         }
     }
 
@@ -674,7 +658,7 @@ class MainAdminController extends BaseController {
                 'Sex' => $this->request->getPost('sex'),
                 'Address' => $this->request->getPost('address'),
                 'Birthplace' => $this->request->getPost('birthplace'),
-                'Status' => $this->request->getPost('status'),
+
                 'Birthday' => $this->request->getPost('birthday'),
                 'Nationality' => $this->request->getPost('nationality'),
                 'Religion' => $this->request->getPost('religion'),
@@ -691,11 +675,12 @@ class MainAdminController extends BaseController {
                 'Sex' => $this->request->getPost('sex'),
                 'Address' => $this->request->getPost('address'),
                 'Birthplace' => $this->request->getPost('birthplace'),
-                'Status' => $this->request->getPost('status'),
+
                 'Birthday' => $this->request->getPost('birthday'),
                 'Nationality' => $this->request->getPost('nationality'),
                 'Religion' => $this->request->getPost('religion'),
                 'Admin_PhoneNum' => $this->request->getPost('phoneNumber'),
+
                 // Add other fields as needed
             ]);
 

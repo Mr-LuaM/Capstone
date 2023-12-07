@@ -30,101 +30,99 @@ class ApplicantsController extends BaseController {
             $selectedFile1 = $this->request->getFile('selectedFile1');
 
             // Check if the file was uploaded successfully
-            if(!$selectedFile1->isValid()) {
-                return $this->fail('Invalid file upload', 400);
-            }
+            if($selectedFile1->isValid()) {
+                // Generate a unique filename to avoid overwriting existing files
+                $newFileName = $selectedFile1->getRandomName();
 
-            // Generate a unique filename to avoid overwriting existing files
-            $newFileName = $selectedFile1->getRandomName();
+                // Move the uploaded file to a specific directory with the new filename
+                $selectedFile1->move('public/uploads/applicants/profiles/', $newFileName);
 
-            // Move the uploaded file to a specific directory with the new filename
-            $selectedFile1->move('public/uploads/applicants/profiles/', $newFileName);
+                $birthdate = $this->request->getPost('Bdate');
 
-            $birthdate = $this->request->getPost('Bdate');
+                // Check if $birthdate is a valid date string
+                if(is_string($birthdate) && strtotime($birthdate)) {
+                    // Calculate age based on the birthdate
+                    $birthdate = new \DateTime($birthdate);
+                    $currentDate = new \DateTime();
+                    $age = $currentDate->diff($birthdate)->y;
+                } else {
+                    // Handle the case where $birthdate is not a valid date string
+                    $age = 1; // or set a default value or handle the error as needed
+                }
 
-            // Check if $birthdate is a valid date string
-            if(!is_string($birthdate) || !strtotime($birthdate)) {
-                // Handle the case where $birthdate is not a valid date string
-                return $this->fail('Invalid birthdate', 400);
-            }
-
-            // Calculate age based on the birthdate
-            $birthdate = new \DateTime($birthdate);
-            $currentDate = new \DateTime();
-            $age = $currentDate->diff($birthdate)->y;
-
-            // Now, you can save the file path to your database along with other form fields
-            $data = [
-                'Last_Name' => $this->request->getPost('lastName'),
-                'First_Name' => $this->request->getPost('firstName'),
-                'Middle_Name' => $this->request->getPost('middleName'),
-                'Name_Extension' => $this->request->getPost('nameExtension'),
-                'Sex' => $this->request->getPost('sex'),
-                'Bdate' => $this->request->getVar('Bdate'),
-                'Age' => (int)$age,
-                'Nationality' => $this->request->getPost('nationality'),
-                'Religion' => $this->request->getPost('religion'),
-                'Height' => (float)$this->request->getPost('height'),
-                'Weight' => (float)$this->request->getPost('weight'),
-                'Address' => $this->request->getPost('address'),
-                'Email' => $this->request->getPost('email'),
-                'Phone_Number' => $this->request->getPost('phoneNumber'),
-                'Selected_File1' => 'public/uploads/applicants/profiles/'.$newFileName,
-                'Course1' => $this->request->getPost('course1'),
-                'Station1' => $this->request->getPost('station1'),
-                'Course2' => $this->request->getPost('course2'),
-                'Station2' => $this->request->getPost('station2'),
-                'Course3' => $this->request->getPost('course3'),
-                'Station3' => $this->request->getPost('station3'),
-                'Date_Of_Application' => date('Y-m-d H:i:s'),
-                'Status' => 'pending', // Assuming all applications start as pending
-                'Password' => $this->request->getPost('password') // Add the password field
-            ];
-
-            // Validate input data
-            $validationRules = $this->getValidationRules();
-            if(!$this->validate($validationRules)) {
-                return $this->fail(validation_errors(), 400);
-            }
-
-            // Check if the email is unique
-            if(!$this->isEmailUnique($data['Email'])) {
-                return $this->fail('Email is already in use', 400);
-            }
-
-            $verificationCode = md5(uniqid(rand(), true));
-
-            // Create a user entry for the applicant
-            if(!empty($data['Password'])) {
-                $userData = [
-                    'Email' => $data['Email'],
-                    'Password' => password_hash($data['Password'], PASSWORD_BCRYPT),
-                    'Role_ID' => 6,
-                    'VerificationCode' => $verificationCode,
-                    'IsVerified' => 0,
-                    'RegistrationDate' => date('Y-m-d H:i:s'),
-                    'LastLoginDate' => null,
-                    'VerificationExpiry' => null
+                // Now, you can save the file path to your database along with other form fields
+                $data = [
+                    'Last_Name' => $this->request->getPost('lastName'),
+                    'First_Name' => $this->request->getPost('firstName'),
+                    'Middle_Name' => $this->request->getPost('middleName'),
+                    'Name_Extension' => $this->request->getPost('nameExtension'),
+                    'Sex' => $this->request->getPost('sex'),
+                    'Bdate' => $this->request->getVar('Bdate'),
+                    'Age' => (int)$age,
+                    'Nationality' => $this->request->getPost('nationality'),
+                    'Religion' => $this->request->getPost('religion'),
+                    'Height' => (float)$this->request->getPost('height'),
+                    'Weight' => (float)$this->request->getPost('weight'),
+                    'Address' => $this->request->getPost('address'),
+                    'Email' => $this->request->getPost('email'),
+                    'Phone_Number' => $this->request->getPost('phoneNumber'),
+                    'Selected_File1' => 'public/uploads/applicants/profiles/'.$newFileName,
+                    'Course1' => $this->request->getPost('course1'),
+                    'Station1' => $this->request->getPost('station1'),
+                    'Course2' => $this->request->getPost('course2'),
+                    'Station2' => $this->request->getPost('station2'),
+                    'Course3' => $this->request->getPost('course3'),
+                    'Station3' => $this->request->getPost('station3'),
+                    'Date_Of_Application' => date('Y-m-d H:i:s'),
+                    'Status' => 'pending', // Assuming all applications start as pending
+                    'Password' => $this->request->getPost('password') // Add the password field
                 ];
 
-                // Save the user data to the database
-                $this->users->save($userData);
-                // Get the inserted ID from the users table
-                $userID = $this->users->insertID();
+                // Validate input data
+                $validationRules = $this->getValidationRules();
+                if(!$this->validate($validationRules)) {
+                    return $this->fail(validation_errors(), 400);
+                }
 
-                // Add the User_ID to the applicant data
-                $data['User_ID'] = $userID;
+                // Check if the email is unique
+                if(!$this->isEmailUnique($data['Email'])) {
+                    return $this->fail('Email is already in use', 400);
+                }
 
-                // Save the data to the applicants table
-                $this->applicants->save($data);
+                $verificationCode = md5(uniqid(rand(), true));
 
-                // Commit the transaction
-                $this->db->transComplete();
+                // Create a user entry for the applicant
+                if(!empty($data['Password'])) {
+                    $userData = [
+                        'Email' => $data['Email'],
+                        'Password' => password_hash($data['Password'], PASSWORD_BCRYPT),
+                        'Role_ID' => 6,
+                        'VerificationCode' => $verificationCode,
+                        'IsVerified' => 0,
+                        'RegistrationDate' => date('Y-m-d H:i:s'),
+                        'LastLoginDate' => null,
+                        'VerificationExpiry' => null
+                    ];
 
-                // Send the verification email
-                $this->sendVerificationEmail($data['Email'], $verificationCode);
+                    // Save the user data to the database
+                    $this->users->save($userData);
+                    // Get the inserted ID from the users table
+                    $userID = $this->users->insertID();
 
-                return $this->respond(['message' => 'Application submitted successfully'], 200);
+                    // Add the User_ID to the applicant data
+                    $data['User_ID'] = $userID;
+
+                    // Save the data to the applicants table
+                    $r = $this->applicants->save($data);
+
+                    // Commit the transaction
+                    $this->db->transComplete();
+
+                    // Send the verification email
+                    $this->sendVerificationEmail($data['Email'], $verificationCode);
+
+                    return $this->respond($r, 200);
+                }
             }
 
         } catch (\Exception $e) {
@@ -137,6 +135,12 @@ class ApplicantsController extends BaseController {
             return $this->fail('Error occurred: '.$e->getMessage(), 500);
         }
     }
+
+
+
+
+
+
 
     // Define validation rules in a separate method
     private function getValidationRules() {
