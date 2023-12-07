@@ -1,8 +1,10 @@
 <template>
-  <v-container class="fill-height">
-    <LoginSheet />
-    <infoSnack ref="snackbar" />
-  </v-container>
+  <v-app>
+    <v-container class="fill-height">
+      <LoginSheet />
+      <infoSnack ref="snackbar" />
+    </v-container>
+  </v-app>
 </template>
 
 <script>

@@ -1,23 +1,6 @@
 <template>
   <v-container fluid class="rounded-lg bg-surface">
     <v-card>
-      <v-toolbar color="primary-darken-1">
-        <v-app-bar-nav-icon>
-          <v-icon icon="mdi-account"></v-icon
-        ></v-app-bar-nav-icon>
-        &nbsp;
-        <v-toolbar-title>Manage Accounts and Roles</v-toolbar-title>
-
-        <v-spacer></v-spacer>
-
-        <template v-slot:extension>
-          <v-tabs v-model="tab" centered bg-color="primary" grow>
-            <v-tab value="StationAccounts">Station Accounts</v-tab>
-            <v-tab value="TeacherAccounts">Teachers</v-tab>
-          </v-tabs>
-        </template>
-      </v-toolbar>
-
       <v-window v-model="tab">
         <v-window-item value="StationAccounts" class="pa-8">
           <v-data-iterator
@@ -216,7 +199,7 @@
                               <!-- Add more columns as needed -->
                             </v-row>
                             <!-- {{ item.raw.StationAdmin_ID }}
-                            {{ item.raw.Station_ID }} -->
+                              {{ item.raw.Station_ID }} -->
                             <v-container>
                               <v-divider></v-divider>
                             </v-container>
@@ -443,7 +426,7 @@
                               <!-- Add more columns as needed -->
                             </v-row>
                             <!-- {{ item.raw.StationAdmin_ID }}
-                            {{ item.raw.Station_ID }} -->
+                              {{ item.raw.Station_ID }} -->
                             <v-container>
                               <v-divider></v-divider>
                             </v-container>

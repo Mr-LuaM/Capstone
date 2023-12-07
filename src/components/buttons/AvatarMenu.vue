@@ -17,6 +17,9 @@
           <p class="text-caption mt-1">
             {{ user.email }}
           </p>
+          <p class="text-caption mt-1">
+            Role: {{ getRoleName() }}
+          </p>
           <v-divider class="my-3"></v-divider>
           <router-link :to="`${getParentRoute()}/edit-accounts`">
             <v-btn variant="text">Edit Account</v-btn>
@@ -30,7 +33,6 @@
     </v-card>
   </v-menu>
 </template>
-
 <script>
 import { mapGetters } from "vuex";
 
@@ -42,7 +44,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(["userName", "userEmail", "userProfile"]),
+    ...mapGetters(["userName", "userEmail", "userProfile", "role"]),
     user() {
       const userName = this.userName || "";
 
@@ -83,6 +85,20 @@ export default {
       const parentRoute = currentRoute.path.split("/").slice(0, -1).join("/");
 
       return parentRoute;
+    },
+    getRoleName() {
+      switch (this.role) {
+        case "2":
+          return "Main Admin";
+        case "3":
+          return "Station Admin";
+        case "4":
+          return "Teacher";
+        case "5":
+          return "Student";
+        default:
+          return "Unknown Role";
+      }
     },
   },
 };

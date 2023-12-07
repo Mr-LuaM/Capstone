@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container class="align-self-center">
     <v-card
       class="mx-auto align-self-center pa-10"
       min-width="500"
@@ -213,8 +213,8 @@ export default {
         const roleRoutes = {
           1: "/admin/applicants",
           6: "/applicant-dashboard",
-          2: "/main-admin-dashboard",
-          3: "/station-admin-dashboard",
+          2: "/admin/applicants",
+          3: "/station/dashboard",
           5: "/admin/applicants",
           4: "/teacher-dashboard",
         };

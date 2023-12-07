@@ -59,9 +59,14 @@ export default {
     return {
       internalValue: this.modelValue,
       nameRules: [
-        (v) => /^[A-Za-z\s]*$/.test(v) || "Only letters and spaces are allowed", // Allow letters and spaces
-        (v) => v.length <= 50 || "Middle name should not exceed 50 characters", // Limit the length
-      ],
+  (v) =>
+    (v === null || /^[A-Za-z\s]*$/.test(v)) ||
+    "Only letters and spaces are allowed", // Allow letters and spaces
+  (v) =>
+    (!v || v.length <= 50) ||
+    "Middle name should not exceed 50 characters", // Limit the length
+],
+
     };
   },
   watch: {

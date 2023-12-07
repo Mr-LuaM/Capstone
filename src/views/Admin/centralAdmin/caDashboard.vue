@@ -1,8 +1,14 @@
 <template>
-  <div>
-    <div id="enrollmentTrendChart"></div>
-    <div id="courseDistributionChart"></div>
-  </div>
+  <v-container class="bg-surface rounded">
+    <div id="chart">
+      <apexchart
+        type="line"
+        height="350"
+        :options="chartOptions"
+        :series="series"
+      ></apexchart>
+    </div>
+  </v-container>
 </template>
 
 <script>
@@ -11,46 +17,81 @@ import axios from "axios";
 export default {
   data() {
     return {
-      enrollmentData: [],
+      series: [],
+      chartOptions: {
+        chart: {
+          height: 350,
+          type: "line",
+        },
+        stroke: {
+          width: 5,
+          curve: "smooth",
+        },
+        xaxis: {
+          type: "datetime",
+          categories: [],
+          tickAmount: 10,
+          labels: {
+            formatter: function (value, timestamp, opts) {
+              return opts.dateFormatter(new Date(timestamp), "dd MMM");
+            },
+          },
+        },
+        title: {
+          text: "Enrollment Trends",
+          align: "left",
+          style: {
+            fontSize: "16px",
+            color: "#666",
+          },
+        },
+        fill: {
+          type: "gradient",
+          gradient: {
+            shade: "dark",
+            gradientToColors: ["#FDD835"],
+            shadeIntensity: 1,
+            type: "horizontal",
+            opacityFrom: 1,
+            opacityTo: 1,
+            stops: [0, 100, 100, 100],
+          },
+        },
+        yaxis: {
+          min: 0, // Adjust as needed
+        },
+      },
     };
   },
   mounted() {
-    this.fetchDashboardData();
+    // Fetch data from your backend using Axios
+    this.fetchEnrollmentData();
   },
   methods: {
-    async fetchDashboardData() {
+    async fetchEnrollmentData() {
       try {
-        // Fetch data from the CI4 backend
         const response = await axios.get("getEnrollmentDetails");
-        this.enrollmentData = response.data;
+        const enrollmentData = response.data;
 
-        // Render the charts
-        this.renderEnrollmentTrendChart();
-        this.renderCourseDistributionChart();
+        // Process the fetched data and update series and categories
+        this.series = enrollmentData.map((entry) => ({
+          name: entry.Stud_Name,
+          data: [
+            {
+              x: new Date(entry.Enrollment_Date).getTime(),
+              y: 1,
+            },
+          ],
+        }));
+        this.chartOptions.xaxis.categories = enrollmentData.map((entry) =>
+          new Date(entry.Enrollment_Date).toISOString()
+        );
+
+        // Emit an event to update the chart
+        this.$refs.chart.updateSeries(this.series);
       } catch (error) {
-        console.error("Error fetching dashboard data:", error);
+        console.error("Error fetching enrollment data:", error);
       }
-    },
-
-    renderCourseDistributionChart() {
-      const courseData = this.enrollmentData.map((entry) => ({
-        name: entry.Course_Name || "Unknown Course", // Use 'name' instead of 'x'
-        data: 1, // Assuming 1 student per entry for distribution
-      }));
-
-      const options = {
-        chart: {
-          type: "pie",
-        },
-        series: courseData,
-        labels: courseData.map((entry) => entry.name), // Use 'name' instead of 'x'
-      };
-
-      const chart = new ApexCharts(
-        document.querySelector("#courseDistributionChart"),
-        options
-      );
-      chart.render();
     },
   },
 };

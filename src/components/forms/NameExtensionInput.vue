@@ -69,12 +69,13 @@ export default {
     return {
       internalValue: this.modelValue,
       extensionRules: [
-        (v) =>
-          /^[A-Za-z\s\.,]*$/.test(v) ||
-          "Only letters, spaces, and periods are allowed",
-        (v) =>
-          v.length <= 50 || "Name extension should not exceed 50 characters",
-      ],
+      (v) =>
+        (v === null || /^[A-Za-z\s\.,]*$/.test(v)) ||
+        "Only letters, spaces, and periods are allowed",
+      (v) =>
+        (!v || v.length <= 50) ||
+        "Name extension should not exceed 50 characters",
+    ],
     };
   },
   watch: {

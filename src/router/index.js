@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import { jwtDecode as jwt_decode } from "jwt-decode";
 import Solo from "../layouts/Solo";
 import Main from "../layouts/Main";
+import Station from "../layouts/Station";
 import StudNav from "../layouts/StudNav";
 import HomeView from "../views/HomeView.vue";
 import createAccount from "../views/CreateAccount.vue";
@@ -31,7 +32,7 @@ const routes = [
   {
     path: "/admin",
     component: Main,
-    meta: { requiredRoles: ["1"] },
+    meta: { requiredRoles: ["2"] },
     children: [
       {
         path: "dashboard",
@@ -76,6 +77,7 @@ const routes = [
       },
     ],
   },
+
   {
     path: "/application",
     name: "application",
@@ -95,6 +97,54 @@ const routes = [
         path: "home",
         name: "studentHome",
         component: () => import("../views/Student/Home.vue"),
+      },
+    ],
+  },
+  {
+    path: "/station",
+    component: Station,
+    meta: { requiredRoles: ["3"] },
+    children: [
+      {
+        path: "dashboard",
+        name: "saDashboard",
+        component: () => import("../views/Admin/StationAdmin/saDashboard.vue"),
+      },
+      {
+        path: "students",
+        name: "saManageApplicants",
+        component: () =>
+          import("../views/Admin/StationAdmin/saManageStudents.vue"),
+      },
+      {
+        path: "Teachers",
+        name: "saManageAccounts",
+        component: () =>
+          import("../views/Admin/StationAdmin/saManageTeachers.vue"),
+      },
+      {
+        path: "stations",
+        name: "saManageStation",
+        component: () =>
+          import("../views/Admin/StationAdmin/saManageStation.vue"),
+      },
+      {
+        path: "courses",
+        name: "saManageCourses",
+        component: () =>
+          import("../views/Admin/StationAdmin/saManageCourse.vue"),
+      },
+      {
+        path: "announcements",
+        name: "saAnnouncement",
+        component: () =>
+          import("../views/Admin/StationAdmin/saAnnouncement.vue"),
+      },
+      {
+        path: "edit-accounts",
+        name: "saEditAccounts",
+        component: () =>
+          import("../views/Admin/StationAdmin/saEditAccount.vue"),
       },
     ],
   },

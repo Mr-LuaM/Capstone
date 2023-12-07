@@ -158,7 +158,7 @@
             <v-form ref="form" @submit.prevent="submit">
               <v-row justify="center" align="center">
                 <!-- Left side - Forms -->
-                <v-col cols="12" sm="6" md="4">
+                <v-col cols="12">
                   <GenericTextField
                     customLabel="Station Name*"
                     required
@@ -166,7 +166,7 @@
                   />
                 </v-col>
 
-                <v-col cols="12" sm="6" md="4">
+                <v-col cols="12">
                   <Address
                     divLabel=""
                     v-model="editedStation.Location"
@@ -176,7 +176,7 @@
                   />
                 </v-col>
 
-                <v-col cols="12" sm="6" md="4">
+                <v-col cols="12">
                   <GenericAutocomplete
                     v-model.lazy="editedStation.status"
                     custom-label="Status"
