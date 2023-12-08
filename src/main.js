@@ -8,6 +8,9 @@ import "../src/assets/css/main.css";
 import axios from "axios";
 import VueApexCharts from "vue3-apexcharts";
 axios.defaults.baseURL = "http://backend.test/";
+import DaySpanVuetify from "dayspan-vuetify";
+
+import "dayspan-vuetify/dist/lib/dayspan-vuetify.min.css";
 
 // Global components
 import infoSnack from "./components/snackbars/infoSnack.vue";
@@ -89,4 +92,14 @@ app.component("warning", warning);
 app.component("success", success);
 app.component("confirmationModal", confirmationModal);
 
-app.use(store).use(router).use(vuetify).use(VueApexCharts).mount("#app");
+app
+  .use(store)
+  .use(router)
+  .use(vuetify)
+  .use(VueApexCharts)
+  .use(DaySpanVuetify, {
+    methods: {
+      getDefaultEventColor: () => "#1976d2",
+    },
+  })
+  .mount("#app");

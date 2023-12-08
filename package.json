@@ -7,10 +7,16 @@
     "build": "vue-cli-service build"
   },
   "dependencies": {
+    "@fullcalendar/core": "^6.1.10",
+    "@fullcalendar/interaction": "^6.1.10",
+    "@fullcalendar/list": "^6.1.10",
+    "@fullcalendar/timegrid": "^6.1.10",
+    "@fullcalendar/vue3": "^6.1.10",
     "@mdi/font": "5.9.55",
     "apexcharts": "^3.44.0",
     "axios": "^1.6.0",
     "core-js": "^3.8.3",
+    "dayspan-vuetify": "^0.4.0",
     "font-awesome": "^4.7.0",
     "html2canvas": "^1.4.1",
     "html2pdf.js": "^0.10.1",
