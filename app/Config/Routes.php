@@ -66,6 +66,11 @@ $routes->post('/getTeacherAssignmentsDetailsperStation', 'StationAdminController
 $routes->post('/getEnrollmentsByCourse', 'StationAdminController::getEnrollmentsByCourse');
 
 
+$routes->post('updateTeacherDetails', 'TeacherController::updateTeacherDetails');
+$routes->post('getTeacherEditDetails', 'TeacherController::getTeacherEditDetails');
+$routes->post('getStudents', 'TeacherController::getStudents');
+$routes->post('importGradesHandler', 'TeacherController::importGrades');
+$routes->post('editGrade', 'TeacherController::saveGrade');
 
 
 $routes->get('generateSecureToken/(:num)', 'AuthController::generateSecureToken/$1');

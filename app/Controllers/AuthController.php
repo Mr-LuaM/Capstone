@@ -148,6 +148,10 @@ class AuthController extends BaseController {
                 // Check the admin table for status
                 $stationAdmin = $this->StationAdmin->where('User_ID', $userID)->first();
                 return $stationAdmin ? $stationAdmin['Status'] : 'inactive';
+            case 4: // Assuming role 2 corresponds to station admin
+                // Check the admin table for status
+                $teachers = $this->teachers->where('User_ID', $userID)->first();
+                return $teachers ? $teachers['Status'] : 'inactive';
             default:
                 return '1'; // Default to inactive if role is not recognized
         }
@@ -165,6 +169,7 @@ class AuthController extends BaseController {
             '3' => \App\Models\StationAdminModel::class,
             '6' => \App\Models\ApplicantsModel::class,
             '2' => \App\Models\MainAdminModel::class,
+            '4' => \App\Models\TeachersModel::class,
             // Add more entries for other roles as needed
         ];
 

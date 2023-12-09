@@ -63,6 +63,7 @@ abstract class BaseController extends ResourceController {
     protected $annoucements;
     protected $teachers;
     protected $teacherAssignments;
+    protected $grades;
     /**
      * @return void
      */
@@ -88,6 +89,7 @@ abstract class BaseController extends ResourceController {
         $this->annoucements = new \App\Models\AnnouncementModel();
         $this->teachers = new \App\Models\TeachersModel();
         $this->teacherAssignments = new \App\Models\TeacherAssignments();
+        $this->grades = new \App\Models\GradeModel();
 
 
     }
