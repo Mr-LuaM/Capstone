@@ -6,6 +6,7 @@ import Station from "../layouts/Station";
 import StudNav from "../layouts/StudNav";
 import HomeView from "../views/HomeView.vue";
 import createAccount from "../views/CreateAccount.vue";
+import Teacher from "../layouts/Teacher.vue";
 
 const routes = [
   {
@@ -145,6 +146,38 @@ const routes = [
         name: "saEditAccounts",
         component: () =>
           import("../views/Admin/StationAdmin/saEditAccount.vue"),
+      },
+    ],
+  },
+  {
+    path: "/teacher",
+    component: Teacher,
+    meta: { requiredRoles: ["4"] },
+    children: [
+      {
+        path: "dashboard",
+        name: "tDashboard",
+        component: () => import("../views/Teachers/tDashboard.vue"),
+      },
+      {
+        path: "students",
+        name: "tStudents",
+        component: () => import("../views/Teachers/tStudents.vue"),
+      },
+      {
+        path: "schedule",
+        name: "tSchedule",
+        component: () => import("../views/Teachers/t.Schedule.vue"),
+      },
+      {
+        path: "announcements",
+        name: "tAnnouncement",
+        component: () => import("../views/Teachers/t.Announcements.vue"),
+      },
+      {
+        path: "edit-accounts",
+        name: "caEditAccounts",
+        component: () => import("../views/Teachers/tEditAccount.vue"),
       },
     ],
   },

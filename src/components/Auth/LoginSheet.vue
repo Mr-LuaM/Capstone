@@ -216,7 +216,7 @@ export default {
           2: "/admin/applicants",
           3: "/station/dashboard",
           5: "/admin/applicants",
-          4: "/teacher-dashboard",
+          4: "/teacher/dashboard",
         };
 
         const defaultRoute = "/hi";
