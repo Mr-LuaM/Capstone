@@ -92,7 +92,7 @@ class AuthController extends BaseController {
 
             // Verify hashed password
             if(!password_verify($password, $user['Password'])) {
-                return $this->respond(['error' => 'Invalid password'], 401);
+                return $this->respond(['error' => 'Invalid password'], 200);
             }
 
             // Check if the user is verified

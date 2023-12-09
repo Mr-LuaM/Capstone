@@ -13,6 +13,79 @@ class MainController extends BaseController {
     //     var_dump($mainAdmin);
 
     // }
+    public function getCoursesInStation($stationId = null) {
+        $status = $this->request->getGet('status');
+
+        $builder = $this->db->table('courses');
+
+        // Check if a status filter is provided
+        if($status) {
+            // Assuming 'status' is a field in the 'courses' table
+            $builder->where('courses.status', $status)->where('stations.status', $status);
+        }
+
+        // Add a WHERE clause for the station_id if it's provided
+        if($stationId) {
+            $builder->where('stationcourses.Station_ID', $stationId);
+        }
+
+        $courses = $builder
+            ->select('courses.*, stations.Station_ID, stations.Station_Name, stations.Location, stations.status as sstatus, stations.created_at as screated_at, stations.status_updated_at as sstatus_updated_at')
+            ->join('stationcourses', 'courses.Course_ID = stationcourses.Course_ID')
+            ->join('stations', 'stationcourses.Station_ID = stations.Station_ID')
+            ->get()
+            ->getResult();
+
+        // Organize the data as needed
+        $data = [];
+
+        foreach($courses as $course) {
+            // Check if the course is already in $data
+            $existingCourse = array_filter($data, function ($item) use ($course) {
+                return $item['Course_ID'] === $course->Course_ID;
+            });
+
+            // If the course is not in $data, add it
+            if(empty($existingCourse)) {
+                $courseData = [
+                    'Course_ID' => $course->Course_ID,
+                    'Course_Name' => $course->Course_Name,
+                    'Course_Description' => $course->Course_Description,
+                    'Duration' => $course->Duration,
+                    'Credits' => $course->Credits,
+                    'status' => $course->status,
+                    'created_at' => $course->created_at,
+                    'status_updated_at' => $course->status_updated_at,
+                    'Stations_Offering' => [
+                        [
+                            'Station_ID' => $course->Station_ID,
+                            'Station_Name' => $course->Station_Name,
+                            'Location' => $course->Location,
+                            'status' => $course->sstatus,
+                            'created_at' => $course->screated_at,
+                            'status_updated_at' => $course->sstatus_updated_at,
+                        ],
+                    ],
+                ];
+
+                $data[] = $courseData;
+            } else {
+                // If the course is already in $data, add the station to its 'Stations_Offering' array
+                $key = key($existingCourse);
+                $data[$key]['Stations_Offering'][] = [
+                    'Station_ID' => $course->Station_ID,
+                    'Station_Name' => $course->Station_Name,
+                    'Location' => $course->Location,
+                    'status' => $course->sstatus,
+                    'created_at' => $course->screated_at,
+                    'status_updated_at' => $course->sstatus_updated_at,
+                ];
+            }
+        }
+
+        return $this->respond($data);
+    }
+
 
     public function getCourses() {
         $status = $this->request->getGet('status');
@@ -186,12 +259,12 @@ class MainController extends BaseController {
 
             // Assuming your roles table has a structure like this
             if($userRole !== 1 && $userRole !== 6) { // Assuming 1 is the Role_ID for Admin
-                $roles = $this->roles->findAll();
+                $roles = $this->roles->whereNotIn('Role_ID', [6])->findAll();
+
 
             }
 
             // Your logic to filter roles based on $userRole
-
 
             // Return the roles in the response
             return $this->respond($roles);
@@ -200,6 +273,7 @@ class MainController extends BaseController {
             return $this->fail('Failed to fetch roles', 500);
         }
     }
+
 
     public function getAnnouncements() {
         try {

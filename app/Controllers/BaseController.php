@@ -62,6 +62,7 @@ abstract class BaseController extends ResourceController {
     protected $mainAdmin;
     protected $annoucements;
     protected $teachers;
+    protected $teacherAssignments;
     /**
      * @return void
      */
@@ -86,6 +87,7 @@ abstract class BaseController extends ResourceController {
         $this->roles = new \App\Models\RoleModel();
         $this->annoucements = new \App\Models\AnnouncementModel();
         $this->teachers = new \App\Models\TeachersModel();
+        $this->teacherAssignments = new \App\Models\TeacherAssignments();
 
 
     }

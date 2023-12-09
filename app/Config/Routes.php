@@ -30,7 +30,7 @@ $routes->get('/getCourse', 'MainController::getCourse');
 $routes->post('/getRoles', 'MainController::getRoles');
 $routes->get('/getCoursesByStation/(:num)', 'MainController::getCoursesByStation/$1');
 $routes->get('/getAnnouncements', 'MainController::getAnnouncements');
-
+$routes->get('getCoursesInStation/(:segment)', 'MainController::getCoursesInStation/$1');
 
 $routes->post('/submitApplication', 'ApplicantsController::submitApplication');
 
@@ -54,12 +54,16 @@ $routes->post('addAnnouncement', 'MainAdminController::addAnnouncement');
 $routes->post('removeAnnouncement/(:num)', 'MainAdminController::removeAnnouncement/$1');
 $routes->get('/getTeacherAssignmentsDetails', 'MainAdminController::getTeacherAssignmentsDetails');
 $routes->post('toggleTeacherStatus/(:num)', 'MainAdminController::toggleTeacherStatus/$1');
+$routes->post('changeTeacherStation', 'MainAdminController::changeTeacherStation');
+$routes->post('changeTeacherCourse', 'MainAdminController::changeTeacherCourse');
 
 
 $routes->post('updateStationAdminDetails', 'StationAdminController::updateStationAdminDetails');
 $routes->post('getStationAdminEditDetails', 'StationAdminController::getStationAdminEditDetails');
 $routes->post('getStationDetailsperStation', 'StationAdminController::getStationDetailsperStation');
 $routes->post('saveStationChanges', 'StationAdminController::saveStationChanges');
+$routes->post('/getTeacherAssignmentsDetailsperStation', 'StationAdminController::getTeacherAssignmentsDetailsperStation');
+$routes->post('/getEnrollmentsByCourse', 'StationAdminController::getEnrollmentsByCourse');
 
 
 

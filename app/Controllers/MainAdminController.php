@@ -586,6 +586,37 @@ class MainAdminController extends BaseController {
             return $this->respond(['error' => 'An error occurred'], 500);
         }
     }
+    public function changeTeacherStation() {
+        try {
+            $stationId = $this->request->getPost('Station_ID');
+            $teacherId = $this->request->getPost('Station_Admin_ID'); // Change to Teacher_ID
+
+            // Get the teacher by Teacher_ID
+            $teacher = $this->teacherAssignments->where('Teacher_ID', $teacherId)->first();
+
+            if(!$teacher) {
+                return $this->respond(['error' => 'Teacher not found'], 404);
+            }
+
+            // Update the station for the teacher
+            $teacherData = [
+                'station_id' => $stationId, // Change to station_id
+                'course_id' => '',
+            ];
+
+
+            $this->teacherAssignments->set($teacherData)->where('Teacher_ID', $teacherId)->update();
+
+            return $this->respond(['success' => true, 'message' => 'Station updated successfully']);
+        } catch (\Exception $e) {
+            // Log the exception for debugging and auditing
+            log_message('error', 'Exception during changeTeacherStation: '.$e->getMessage());
+
+            // Return an error response
+            return $this->respond(['error' => 'An error occurred'], 500);
+        }
+    }
+
     public function getAdminEditDetails() {
         // Get parameters from the request
         $role = $this->request->getVar('userRole');
@@ -790,17 +821,17 @@ class MainAdminController extends BaseController {
 
     public function getTeacherAssignmentsDetails() {
         $builder = $this->db->table('Users U');
-        $builder->select('U.Email AS User_Email, U.Role_ID AS User_Role, T.*, TA.TeachingAssignment_ID, SC.*, S.Station_Name, C.Course_Name');
+        $builder->select('U.Email AS User_Email, U.Role_ID AS User_Role, T.*, TA.TeachingAssignment_ID, TA.course_id, TA.station_id, S.Station_Name, C.Course_Name');
         $builder->join('Teachers T', 'U.User_ID = T.User_ID');
         $builder->join('TeachingAssignments TA', 'T.Teacher_ID = TA.Teacher_ID');
-        $builder->join('StationCourses SC', 'TA.StationCourse_ID = SC.StationCourse_ID');
-        $builder->join('Stations S', 'SC.Station_ID = S.Station_ID');
-        $builder->join('Courses C', 'SC.Course_ID = C.Course_ID');
+        $builder->join('Stations S', 'TA.station_id = S.Station_ID');
+        $builder->join('Courses C', 'TA.course_id = C.Course_ID');
 
         $result = $builder->get()->getResultArray();
 
-        return $this->respond($result); // Assumes you're using the response trait
+        return $this->respond($result);
     }
+
 
     public function toggleTeacherStatus($id) {
         try {
@@ -838,7 +869,36 @@ class MainAdminController extends BaseController {
             return $this->respond(['success' => false, 'message' => 'Error toggling station status']);
         }
     }
+    public function changeTeacherCourse() {
+        try {
+            $Course_ID = $this->request->getPost('Course_ID');
+            $Teacher_ID = $this->request->getPost('Teacher_ID'); // Change to Teacher_ID
 
+            // Get the teacher by Teacher_ID
+            $teacher = $this->teacherAssignments->where('Teacher_ID', $Teacher_ID)->first();
+
+            if(!$teacher) {
+                return $this->respond(['error' => 'Teacher not found'], 404);
+            }
+
+            // Update the station for the teacher
+            $teacherData = [
+                'course_id' => $Course_ID, // Change to station_id
+
+            ];
+
+
+            $this->teacherAssignments->set($teacherData)->where('Teacher_ID', $Teacher_ID)->update();
+
+            return $this->respond(['success' => true, 'message' => 'Station updated successfully']);
+        } catch (\Exception $e) {
+            // Log the exception for debugging and auditing
+            log_message('error', 'Exception during changeTeacherStation: '.$e->getMessage());
+
+            // Return an error response
+            return $this->respond(['error' => 'An error occurred'], 500);
+        }
+    }
 
 
 
