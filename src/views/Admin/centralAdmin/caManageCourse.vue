@@ -298,7 +298,7 @@ export default {
           sortable: true,
         },
         {
-          title: "Duration (y)",
+          title: "Duration (m)",
           value: "Duration",
           align: "start",
           sortable: true,

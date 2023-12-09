@@ -38,7 +38,7 @@ export default createStore({
       state.role = role;
       console.log("Setting role:", role);
     },
-    setStationId(state, stationId) { // Add setStationId mutation
+    setStationId(state, stationId) {
       state.stationId = stationId;
       console.log("Setting stationId:", stationId);
     },
@@ -56,10 +56,9 @@ export default createStore({
           commit("setUserProfile", response.data.Profile_Picture);
 
           // Check if the role is 2, 4, or 5, and if station_id is available in the response
-          if (["2", "4", "5"].includes(role) && response.data.station_id) {
-            // Commit the stationId to the store
-            commit("setStationId", response.data.station_id);
-          }
+
+          // Commit the stationId to the store
+          commit("setStationId", response.data.Station_ID);
         }
       } catch (error) {
         console.error("Error fetching user details:", error);
@@ -106,7 +105,14 @@ export default createStore({
   },
   plugins: [
     createPersistedState({
-      paths: ["userId", "userEmail", "userName", "userProfile", "role", "stationId"],
+      paths: [
+        "userId",
+        "userEmail",
+        "userName",
+        "userProfile",
+        "role",
+        "stationId",
+      ],
     }),
   ],
 });

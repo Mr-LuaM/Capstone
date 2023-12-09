@@ -2,7 +2,7 @@
   <v-container fluid class="rounded-lg bg-surface">
     <v-card flat>
       <v-card-title class="d-flex align-center pe-2 bg-primary">
-        <v-icon icon="mdi-book-open-page-variant"></v-icon> &nbsp; Manage Course
+        <v-icon icon="mdi-human-greeting"></v-icon> &nbsp; Manage Students
 
         <v-spacer></v-spacer>
 
@@ -46,12 +46,6 @@
           hide-details
           variant="outlined"
         ></v-text-field>
-
-        <v-col cols="auto">
-          <v-btn variant="flat" @click="openAddDialog" color="secondary">
-            Add New
-          </v-btn>
-        </v-col>
       </v-card-title>
 
       <v-divider></v-divider>
@@ -59,8 +53,11 @@
       <v-data-table
         v-model:search="search"
         :headers="headers"
-        :items="filteredCourses"
-        :item-value="(item) => `${item.Course_Name}-${item.Course_ID}`"
+        :items="enrollmentsByCourse"
+        :item-value="
+          (item) =>
+            `${item.course_details.Course_Name}-${item.course_details.Course_ID}`
+        "
         class="elevation-1 rounded-lg"
         show-select
         v-model="selected"
@@ -72,40 +69,109 @@
           <tr>
             <td :colspan="columns.length">
               <v-container class="ml-6 bg-background rounded" fluid>
-                <v-table density="compact" class="rounded-lg">
+                <!-- Teachers Table -->
+                <v-table class="rounded-lg">
                   <thead>
                     <tr>
-                      <th class="text-left">Station Offerring</th>
-                      <th class="text-left">Location</th>
-                      <th class="text-left">Status</th>
-                      <!-- <th class="text-left">
-            Created
-          </th>
-          <th class="text-left">
-            Last Update
-          </th> -->
+                      <th class="text-left">Teachers</th>
+                      <th class="text-left">Full_Name</th>
+                      <th class="text-left">Sex</th>
+                      <th class="text-left">Address</th>
+                      <th class="text-left">Phone Number</th>
+                      <!-- Add headers for teachers here -->
                     </tr>
                   </thead>
                   <tbody>
                     <tr
-                      v-for="station in item.Stations_Offering"
-                      :key="station.Station_ID"
+                      v-for="teacher in item.teachers"
+                      :key="teacher.Teacher_ID"
                     >
-                      <td class="text-left">{{ station.Station_Name }}</td>
-                      <td class="text-left">{{ station.Location }}</td>
+                      <td width="100px">
+                        <v-avatar color="black">
+                          <v-img
+                            :src="
+                              teacher.Profile_Picture
+                                ? 'http://backend.test/' +
+                                  teacher.Profile_Picture
+                                : '../../../assets/img/examples/avatar_victor_metelskiy_shutterstock_548848999.jpg'
+                            "
+                            alt="John"
+                          ></v-img>
+                        </v-avatar>
+                      </td>
+
+                      <td class="text-left">
+                        {{ teacher.First_Name }} {{ teacher.Last_Name }}
+                        <!-- Display additional teacher information here -->
+                      </td>
+                      <td class="text-left">
+                        {{ teacher.Sex }}
+                        <!-- Display additional teacher information here -->
+                      </td>
+                      <td class="text-left">
+                        {{ teacher.Address }}
+                        <!-- Display additional teacher information here -->
+                      </td>
+                      <td class="text-left">
+                        {{ teacher.Teacher_PhoneNum }}
+                        <!-- Display additional teacher information here -->
+                      </td>
+                      <!-- Add more columns for additional teacher information -->
+                    </tr>
+                  </tbody>
+                </v-table>
+
+                <br />
+
+                <!-- Enrolled Students Table -->
+                <v-table class="rounded-lg">
+                  <thead>
+                    <tr>
+                      <th class="text-left">Enrolled Students</th>
+                      <th class="text-left">Full Name</th>
+                      <th class="text-left">Sex</th>
+                      <th class="text-left">Address</th>
+                      <th class="text-left">Phone Number</th>
+                      <th class="text-left">Enrollment Date</th>
+                      <th class="text-left">Enrollment Status</th>
+                      <!-- Add more headers for additional student information -->
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      v-for="student in item.enrolled_students"
+                      :key="student.Stud_ID"
+                    >
+                      <td class="text-left" width="200px">
+                        {{ student.Stud_ID }}
+                      </td>
+
+                      <td class="text-left">
+                        {{ `${student.First_Name} ${student.Last_Name}` }}
+                        <!-- Display the full name -->
+                      </td>
+                      <td class="text-left">
+                        {{ student.Sex }}
+                        <!-- Display additional student information here -->
+                      </td>
+                      <td class="text-left">
+                        {{ student.Address }}
+                        <!-- Display additional student information here -->
+                      </td>
+                      <td class="text-left">
+                        {{ student.Stud_PhoneNum }}
+                        <!-- Display additional student information here -->
+                      </td>
+                      <td class="text-left">{{ student.Enrollment_Date }}</td>
                       <td class="text-left">
                         <v-chip
-                          :color="
-                            station.status === 'active' ? 'success' : 'error'
-                          "
-                          size="small"
+                          :color="getChipColor(student.Enrollment_Status)"
+                          text-color="white"
                           label
                         >
-                          {{ station.status }}
+                          {{ student.Enrollment_Status }}
                         </v-chip>
                       </td>
-                      <!-- <td class="text-left">{{ course.created_at }}</td>
-                  <td class="text-left">{{ course.status_updated_at }}</td> -->
                     </tr>
                   </tbody>
                 </v-table>
@@ -126,18 +192,17 @@
             @click="editCourse(item)"
             color="secondary"
             variant="plain"
-          >
-          </v-btn>
-
+          ></v-btn>
           <v-btn
             size="x-large"
-            @click="openConfirmDialog(item.Course_ID)"
-            :color="item.status === 'inactive' ? 'success' : 'error'"
+            @click="openConfirmDialog(item.course_details.Course_ID)"
+            :color="
+              item.course_details.status === 'inactive' ? 'success' : 'error'
+            "
             density="compact"
             icon="mdi-swap-horizontal-circle-outline"
             variant="plain"
-          >
-          </v-btn>
+          ></v-btn>
         </template>
       </v-data-table>
     </v-card>
@@ -280,56 +345,43 @@ import axios from "axios";
 export default {
   data() {
     return {
-      courses: [],
+      enrollmentsByCourse: [],
       selected: null,
       search: "",
       filter: ["active"],
       headers: [
         {
+          title: "Course ID",
+          value: "course_details.Course_ID",
+          align: "start",
+          sortable: true,
+        },
+        {
           title: "Course Name",
-          value: "Course_Name",
+          value: "course_details.Course_Name",
           align: "start",
           sortable: true,
         },
         {
-          title: "Course_Description",
-          value: "Course_Description",
+          title: "Course Description",
+          value: "course_details.Course_Description",
           align: "start",
           sortable: true,
         },
         {
-          title: "Duration (y)",
-          value: "Duration",
+          title: "Duration (m)",
+          value: "course_details.Duration",
           align: "start",
           sortable: true,
         },
         {
           title: "Credits",
-          value: "Credits",
+          value: "course_details.Credits",
           align: "start",
           sortable: true,
-        },
-        { title: "Status", value: "status", align: "start", sortable: true },
-        {
-          title: "Created Since",
-          value: "created_at",
-          align: "start",
-          sortable: true,
-        },
-        {
-          title: "Last Update",
-          value: "status_updated_at",
-          align: "start",
-          sortable: true,
-        },
-        {
-          title: "Actions",
-          value: "actions",
-          sortable: false,
-          width: "150px",
-          align: "end",
         },
       ],
+
       dialog: false,
       editedCourse: {
         // Your form fields here
@@ -338,17 +390,33 @@ export default {
     };
   },
   created() {
-    this.loadData();
+    this.getEnrollmentsByCourse();
   },
   methods: {
-    async loadData() {
-      try {
-        // Call the getStation function from the service
-        this.courses = await getCourses();
-      } catch (error) {
-        console.error("Failed to fetch stations:", error);
+    getChipColor(status) {
+      switch (status.toLowerCase()) {
+        case "ongoing":
+          return "green";
+        case "finished":
+          return "blue";
+        case "failed":
+          return "red";
+        default:
+          return "grey";
       }
     },
+    async getEnrollmentsByCourse() {
+      try {
+        const response = await axios.post("getEnrollmentsByCourse", {
+          station_id: this.$store.state.stationId,
+        });
+        this.enrollmentsByCourse = response.data;
+      } catch (error) {
+        console.error("Failed to fetch enrollments by course:", error);
+        // Handle errors as needed
+      }
+    },
+
     getColor(status) {
       if (status === "active") return "success";
       else return "primary";
@@ -572,23 +640,23 @@ export default {
     },
   },
   computed: {
-    filteredCourses() {
-      // Apply filters based on the selected checkboxes
-      return this.courses.filter((course) => {
-        const statusFilter =
-          this.filter.length === 0 || this.filter.includes(course.status);
+    // filteredCourses() {
+    //   // Apply filters based on the selected checkboxes
+    //   return this.courses.filter((course) => {
+    //     const statusFilter =
+    //       this.filter.length === 0 || this.filter.includes(course.status);
 
-        const searchFilter =
-          !this.search ||
-          Object.values(course).some(
-            (value) =>
-              typeof value === "string" &&
-              value.toLowerCase().includes(this.search.toLowerCase())
-          );
+    //     const searchFilter =
+    //       !this.search ||
+    //       Object.values(course).some(
+    //         (value) =>
+    //           typeof value === "string" &&
+    //           value.toLowerCase().includes(this.search.toLowerCase())
+    //       );
 
-        return statusFilter && searchFilter;
-      });
-    },
+    //     return statusFilter && searchFilter;
+    //   });
+    // },
     formTitle() {
       // Use a computed property to determine the form title based on the context (add or edit)
       return this.isEditing ? "Edit Course" : "Add Course";

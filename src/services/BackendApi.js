@@ -93,3 +93,11 @@ export async function getTeacherAssignmentsDetails() {
     throw error; // Rethrow the error
   }
 }
+export const getCoursesInStation = async (stationId) => {
+  try {
+    const response = await axios.get(`getCoursesInStation/${stationId}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};

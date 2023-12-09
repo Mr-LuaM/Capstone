@@ -265,7 +265,7 @@ export default {
             this.handleUserRole(userRole);
           } else {
             // Display the error message returned from the server
-            this.passwordError = response.data.error || "Account not active";
+            this.passwordError = response.data.error || "Invalid Password";
             console.log(response.data.error);
           }
         } catch (error) {

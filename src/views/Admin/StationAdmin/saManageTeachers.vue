@@ -201,15 +201,15 @@
                             <v-container>
                               <v-divider></v-divider>
                             </v-container>
-
-                            <StationSelection
-                              v-model="item.raw.Station_Name"
+                            <course-autocomplete
+                              v-model="item.raw.Course_Name"
                               customDensity="compact"
                               customVariant="solo-inverted"
                               customLabel=""
-                              :stationAdminId="item.raw.StationAdmin_ID"
-                              @stationSaved="openConfirmDialogs"
-                            ></StationSelection>
+                              :stationId="$store.state.stationId"
+                              :teacherId="item.raw.Teacher_ID"
+                              @courseSaved="openConfirmDialogs1"
+                            ></course-autocomplete>
                           </div>
                         </v-expand-transition>
                       </v-list-item-content>
@@ -223,7 +223,7 @@
                 color="background"
                 class="justify-space-between text-body-2 mt-4"
               >
-                Total admins: {{ StationAdmins.length }}
+                Total teachers: {{ teachers.length }}
 
                 <div>Page {{ page }} of {{ pageCount }}</div>
               </v-footer>
@@ -233,28 +233,7 @@
       </v-window>
     </v-card>
   </v-container>
-  <v-dialog v-model="dialog" persistent width="800">
-    <v-card>
-      <v-card-title>
-        <span class="text-h5">{{ formTitle }}</span>
-      </v-card-title>
-      <v-card-text>
-        <v-container>
-          <v-form ref="form" @submit.prevent="submit"> </v-form>
-        </v-container>
-      </v-card-text>
-      <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn color="secondary" variant="plain" @click="dialog = false">
-          Close
-        </v-btn>
 
-        <v-btn variant="text" @click="addStationAdmin" color="primary">
-          Add Station Admin
-        </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
   <infoSnack ref="snackbar" />
   <confirmationModal
     ref="confirmationModal"
@@ -265,14 +244,17 @@
 
 <script>
 import axios from "axios";
-import { getStationAdminsWithStation } from "@/services/BackendApi"; // Assuming you have an API module or file
 import { getTeacherAssignmentsDetails } from "@/services/BackendApi"; // Assuming you have an API module or file
+import CourseAutocomplete from "../../../components/forms/CourseSelection/CourseAutocomplete.vue";
 export default {
+  components: {
+    CourseAutocomplete,
+  },
   data() {
     return {
       dialog: false,
       tab: null,
-      StationAdmins: [], // Initialize as an empty array
+
       itemsPerPage: 4,
       search: "",
       selectedStation: "", // Initialize if used in StationSelection
@@ -281,7 +263,6 @@ export default {
     };
   },
   created() {
-    this.loadData();
     this.getTeacherAssignmentsDetails();
   },
   methods: {
@@ -293,27 +274,26 @@ export default {
       const data = await response.json();
       this.courses = data;
     },
-    async loadData() {
-      console.log("Loading data...");
-      this.loading = true;
-
-      try {
-        this.StationAdmins = await getStationAdminsWithStation();
-        console.log("Data loaded successfully:", this.StationAdmins);
-      } catch (error) {
-        console.error("Failed to fetch station admins:", error);
-      } finally {
-        this.loading = false;
-        console.log("Loading complete.");
-      }
-    },
 
     async getTeacherAssignmentsDetails() {
       console.log("Loading data...");
       this.loading = true;
 
       try {
-        this.teachers = await getTeacherAssignmentsDetails();
+        // Assuming `sxios` is a typo and should be `axios`
+        // Also, you need to use `await` before calling the asynchronous function
+        // Assuming `postgetTeacherAssignmentsDetails` is a function that sends a POST request
+        // You should pass the station_id as data in the POST request
+        const response = await axios.post(
+          "/getTeacherAssignmentsDetailsperStation",
+          {
+            station_id: this.$store.state.stationId,
+          }
+        );
+
+        // Assuming the response contains the teachers data
+        this.teachers = response.data;
+
         console.log("Data loaded successfully:", this.teachers);
       } catch (error) {
         console.error("Failed to fetch station admins:", error);
@@ -353,24 +333,30 @@ export default {
         // Handle errors as needed
       }
     },
-    openConfirmDialogs({ station, stationAdminId }) {
-      console.log("StationID:", station);
-      console.log("StationAdminID:", stationAdminId);
+
+    onClickSeeAll() {
+      this.itemsPerPage = this.itemsPerPage === 4 ? this.teachers.length : 4;
+    },
+
+    openConfirmDialogs1({ course, teacherId }) {
+      console.log("Course ID:", course);
+      console.log("Teacher ID:", teacherId);
       this.$refs.confirmationModal.dialog = true;
       this.$refs.confirmationModal.confirmAction = () =>
-        this.changeAdminStation(station, stationAdminId);
+        this.changeTeacherCourse(course, teacherId);
     },
-    async changeAdminStation(station, stationAdminId) {
+
+    async changeTeacherCourse(course, teacherId) {
       try {
         const formData = new FormData();
-        formData.append("Station_ID", station);
-        formData.append("Station_Admin_ID", stationAdminId);
+        formData.append("Course_ID", course);
+        formData.append("Teacher_ID", teacherId);
 
         // Make the Axios POST request
-        const response = await axios.post("changeAdminStation", formData);
+        const response = await axios.post("changeTeacherCourse", formData);
 
         if (response.data.success === true) {
-          this.loadData();
+          this.getTeacherAssignmentsDetails();
           // Show a success alert or perform other success-related actions here
           this.$refs.snackbar.openSnackbar(response.data.message, "success");
           this.$refs.confirmationModal.dialog = false;
@@ -382,14 +368,9 @@ export default {
         // Handle the response if needed
         console.log("Server response:", response.data);
       } catch (error) {
-        this.$refs.snackbar.openSnackbar("No changes occured", "error");
+        this.$refs.snackbar.openSnackbar("No changes occurred", "error");
         this.$refs.confirmationModal.dialog = false;
       }
-    },
-
-    onClickSeeAll() {
-      this.itemsPerPage =
-        this.itemsPerPage === 4 ? this.StationAdmins.length : 4;
     },
   },
 };

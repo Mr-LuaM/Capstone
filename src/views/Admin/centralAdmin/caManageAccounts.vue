@@ -453,8 +453,8 @@
                               customDensity="compact"
                               customVariant="solo-inverted"
                               customLabel=""
-                              :stationAdminId="item.raw.StationAdmin_ID"
-                              @stationSaved="openConfirmDialogs"
+                              :stationAdminId="item.raw.Teacher_ID"
+                              @stationSaved="openConfirmDialogs1"
                             ></StationSelection>
                           </div>
                         </v-expand-transition>
@@ -469,7 +469,7 @@
                 color="background"
                 class="justify-space-between text-body-2 mt-4"
               >
-                Total admins: {{ StationAdmins.length }}
+                Total teachers: {{ teachers.length }}
 
                 <div>Page {{ page }} of {{ pageCount }}</div>
               </v-footer>
@@ -633,6 +633,13 @@ export default {
       this.$refs.confirmationModal.confirmAction = () =>
         this.changeAdminStation(station, stationAdminId);
     },
+    openConfirmDialogs1({ station, stationAdminId }) {
+      console.log("StationID:", station);
+      console.log("StationAdminID:", stationAdminId);
+      this.$refs.confirmationModal.dialog = true;
+      this.$refs.confirmationModal.confirmAction = () =>
+        this.changeAdminStation(station, stationAdminId);
+    },
     async changeAdminStation(station, stationAdminId) {
       try {
         const formData = new FormData();
@@ -640,10 +647,36 @@ export default {
         formData.append("Station_Admin_ID", stationAdminId);
 
         // Make the Axios POST request
-        const response = await axios.post("changeAdminStation", formData);
+        const response = await axios.post("changeTeacherStation", formData);
 
         if (response.data.success === true) {
           this.loadData();
+          // Show a success alert or perform other success-related actions here
+          this.$refs.snackbar.openSnackbar(response.data.message, "success");
+          this.$refs.confirmationModal.dialog = false;
+        } else {
+          // Show the error Snackbar
+          this.$refs.snackbar.openSnackbar(response.data.message, "error");
+        }
+
+        // Handle the response if needed
+        console.log("Server response:", response.data);
+      } catch (error) {
+        this.$refs.snackbar.openSnackbar("No changes occured", "error");
+        this.$refs.confirmationModal.dialog = false;
+      }
+    },
+    async changeTeacherStation(station, stationAdminId) {
+      try {
+        const formData = new FormData();
+        formData.append("Station_ID", station);
+        formData.append("Station_Admin_ID", stationAdminId);
+
+        // Make the Axios POST request
+        const response = await axios.post("changeTeacherStation", formData);
+
+        if (response.data.success === true) {
+          this.getTeacherAssignmentsDetails();
           // Show a success alert or perform other success-related actions here
           this.$refs.snackbar.openSnackbar(response.data.message, "success");
           this.$refs.confirmationModal.dialog = false;
