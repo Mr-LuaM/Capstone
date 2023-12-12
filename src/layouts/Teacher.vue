@@ -14,7 +14,7 @@
       "
     >
       <v-app-bar-nav-icon @click="toggleSidebar"></v-app-bar-nav-icon>
-      <v-toolbar-title class="ml-2">Station Admin</v-toolbar-title>
+      <v-toolbar-title class="ml-2"> Teacher</v-toolbar-title>
       <v-spacer></v-spacer>
 
       <ThemeSwitcher />
@@ -53,6 +53,14 @@
             prepend-icon="mdi-human-greeting"
           >
             <v-list-item-title> Students</v-list-item-title>
+          </v-list-item>
+          <v-list-item
+            link
+            to="/teacher/exams"
+            :class="{ highlight: isRouteActive('/teacher/exams') }"
+            prepend-icon="mdi-pencil"
+          >
+            <v-list-item-title>Manage Exams</v-list-item-title>
           </v-list-item>
           <v-list-item
             link

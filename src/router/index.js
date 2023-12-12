@@ -136,6 +136,11 @@ const routes = [
           import("../views/Admin/StationAdmin/saManageCourse.vue"),
       },
       {
+        path: "schedule",
+        name: "saManageCourses",
+        component: () => import("../views/Admin/StationAdmin/saSchedule.vue"),
+      },
+      {
         path: "announcements",
         name: "saAnnouncement",
         component: () =>
@@ -176,8 +181,13 @@ const routes = [
       },
       {
         path: "edit-accounts",
-        name: "caEditAccounts",
+        name: "tEditAccounts",
         component: () => import("../views/Teachers/tEditAccount.vue"),
+      },
+      {
+        path: "exams",
+        name: "tExam",
+        component: () => import("../views/Teachers/t.Exams.vue"),
       },
     ],
   },

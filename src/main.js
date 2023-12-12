@@ -35,6 +35,7 @@ import GenericTextArea from "./components/forms/Generic/GenericTextArea.vue";
 import GenericNumber from "./components/forms/Generic/GenericNumber.vue";
 import ImageInput from "./components/forms/ImageInput.vue";
 import GradeFields from "./components/forms/GradeFields.vue";
+import FacultyAutoselect from "./components/forms/FacultyAutoselect.vue";
 //address
 import Address from "./components/forms/address/Address.vue";
 
@@ -54,6 +55,7 @@ const app = createApp(App);
 
 // Register the ThemeSwitcher component
 app.component("infoSnack", infoSnack);
+app.component("FacultyAutoselect", FacultyAutoselect);
 app.component("ThemeSwitcher", ThemeSwitcher);
 app.component("AvatarMenu", AvatarMenu);
 app.component("FileInput", FileInput);

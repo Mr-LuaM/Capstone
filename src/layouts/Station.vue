@@ -70,6 +70,14 @@
           >
             <v-list-item-title>Stations</v-list-item-title>
           </v-list-item>
+          <v-list-item
+            link
+            to="/station/schedule"
+            :class="{ highlight: isRouteActive('/station/schedule') }"
+            prepend-icon="mdi-calendar"
+          >
+            <v-list-item-title>Schedule</v-list-item-title>
+          </v-list-item>
 
           <v-list-item
             link
