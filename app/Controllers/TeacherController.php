@@ -13,15 +13,17 @@ use CodeIgniter\RESTful\ResourceController;
 use CodeIgniter\Validation\Exceptions\ValidationException;
 use CodeIgniter\Validation\Validation;
 
-class TeacherController extends BaseController {
-    public function getTeacherEditDetails() {
+class TeacherController extends BaseController
+{
+    public function getTeacherEditDetails()
+    {
         // Get parameters from the request
         $role = $this->request->getVar('userRole');
         $secureToken = $this->request->getVar('secureToken');
         $userId = $this->request->getVar('userId');
 
 
-        if(!(int)$role === 3) {
+        if (!(int) $role === 3) {
             return $this->failNotFound('Invalid role');
         }
 
@@ -29,7 +31,7 @@ class TeacherController extends BaseController {
         $userDetails = $this->teachers->where('User_ID', $userId)->first();
 
         // Debugging information
-        if($userDetails) {
+        if ($userDetails) {
             // Output data for debugging
 
             // Use $userData as needed in your code
@@ -42,7 +44,8 @@ class TeacherController extends BaseController {
         }
     }
 
-    public function updateTeacherDetails() {
+    public function updateTeacherDetails()
+    {
 
         // Retrieve data from the request
         $userId = $this->request->getPost('userId');
@@ -52,14 +55,14 @@ class TeacherController extends BaseController {
 
 
         // Validate user role and secure token (add your own validation logic)
-        if($userRole !== '4') {
+        if ($userRole !== '4') {
             return $this->failUnauthorized('Invalid role or secure token');
         }
 
         // Fetch the station record based on user ID
-        $stationAdmin = $this->teachers->where('Teacher_ID', (int)$userId)->first();
+        $stationAdmin = $this->teachers->where('Teacher_ID', (int) $userId)->first();
         //   return $this->respond($stationAdmin);
-        if(!$stationAdmin) {
+        if (!$stationAdmin) {
             return $this->failNotFound('User not found');
         }
 
@@ -69,14 +72,14 @@ class TeacherController extends BaseController {
 
 
 
-        if($profilePicture && $profilePicture->isValid()) {
+        if ($profilePicture && $profilePicture->isValid()) {
             // Generate a new filename and move the file to the destination directory
             $newFileName = $profilePicture->getRandomName();
             $profilePicture->move('public/uploads/applicants/profiles/', $newFileName);
 
             // Update stationAdmin details including the Profile_Picture field
             $this->teachers->update($userId, [
-                'Profile_Picture' => 'public/uploads/applicants/profiles/'.$newFileName,
+                'Profile_Picture' => 'public/uploads/applicants/profiles/' . $newFileName,
                 'First_Name' => $this->request->getPost('firstName'),
                 'Middle_Name' => $this->request->getPost('middleName'),
                 'Last_Name' => $this->request->getPost('lastName'),
@@ -116,11 +119,12 @@ class TeacherController extends BaseController {
 
     }
 
-    public function getStudents() {
+    public function getStudents()
+    {
         $loggedInUserID = $this->request->getVar('user_id');
         $teacherID = $this->db->table('teachers')
             ->select('Teacher_ID')
-            ->where('User_ID', (int)$loggedInUserID)
+            ->where('User_ID', (int) $loggedInUserID)
             ->get()
             ->getRow()
             ->Teacher_ID;
@@ -139,14 +143,14 @@ class TeacherController extends BaseController {
         $result = [];
 
         // Iterate through teaching assignments
-        foreach($teachingAssignments as $teachingAssignment) {
+        foreach ($teachingAssignments as $teachingAssignment) {
             // Get the course ID and duration for each teaching assignment
             $courseID = $teachingAssignment->course_id;
             $duration = $teachingAssignment->Duration;
 
             // Get students enrolled in the course with status "ongoing" including the duration
             $students = $this->db->table('enrollments e')
-                ->select('e.*, s.*, g.Grade, g.Assessment_Type, g.Comments, '.$duration.' as Duration') // Include the duration in the students' result
+                ->select('e.*, s.*, g.Grade, g.Assessment_Type, g.Comments, ' . $duration . ' as Duration') // Include the duration in the students' result
                 ->join('students s', 'e.Stud_ID = s.Stud_ID')
                 ->join('grades g', 'e.Enrollment_ID = g.Enrollment_ID', 'left') // Assuming a left join with grades table
                 ->where('e.Course_ID', $courseID)
@@ -167,7 +171,8 @@ class TeacherController extends BaseController {
 
 
 
-    public function importGrades() {
+    public function importGrades()
+    {
 
         // Retrieve the uploaded file from the request
         $file = $this->request->getFile('grades_file');
@@ -175,7 +180,7 @@ class TeacherController extends BaseController {
 
 
         // Check if a file was uploaded
-        if($file) {
+        if ($file) {
 
             // Load the spreadsheet from the uploaded file
             $spreadsheet = IOFactory::load($file->getTempName());
@@ -184,9 +189,9 @@ class TeacherController extends BaseController {
             $sheet = $spreadsheet->getSheetByName("Grades");
             return $this->respond($sheet);
 
-            foreach($sheet->getRowIterator() as $row) {
+            foreach ($sheet->getRowIterator() as $row) {
                 $rowData = [];
-                foreach($row->getCellIterator() as $cell) {
+                foreach ($row->getCellIterator() as $cell) {
                     $rowData[] = $cell->getValue();
                 }
 
@@ -195,14 +200,14 @@ class TeacherController extends BaseController {
                 $grade = $rowData[20] ?? null; // Assuming Grade is in the 21st column (adjust the index accordingly)
 
                 // Check if both enrollmentID and grade are present
-                if($enrollmentID !== null && $grade !== null) {
+                if ($enrollmentID !== null && $grade !== null) {
                     // Insert or update the grade in the database
                     // Perform necessary validation and error handling
 
                     // Example: Update existing grade if it exists, otherwise insert a new grade
                     $existingGrade = $this->db->table('grades')->where('Enrollment_ID', $enrollmentID)->get()->getRow();
 
-                    if($existingGrade) {
+                    if ($existingGrade) {
                         // Update the existing grade
                         $this->db->table('grades')
                             ->where('Enrollment_ID', $enrollmentID)
@@ -222,19 +227,20 @@ class TeacherController extends BaseController {
             return $this->respond(['success' => false, 'message' => 'No file selected']);
         }
     }
-    public function saveGrade() {
+    public function saveGrade()
+    {
         $Stud_ID = $this->request->getPost('Stud_ID');
         $gradeValue = $this->request->getPost('Grade');
 
         // Check if the enrollment exists
         $enrollment = $this->enrollments->where('Stud_ID', $Stud_ID)->first();
 
-        if(!$enrollment) {
+        if (!$enrollment) {
             return $this->fail('Enrollment not found', 404);
         }
 
         // Check if the grade is valid (numeric value)
-        if(!is_numeric($gradeValue)) {
+        if (!is_numeric($gradeValue)) {
             return $this->fail('Invalid grade value', 400);
         }
 
@@ -244,7 +250,7 @@ class TeacherController extends BaseController {
         // Check if a grade record already exists for the given Enrollment_ID
         $existingGrade = $this->grades->where('Enrollment_ID', $enrollment['Enrollment_ID'])->first();
 
-        if($existingGrade) {
+        if ($existingGrade) {
             // Update the existing grade record
             // Update the existing grade record
             $this->grades->update($existingGrade['Grade_ID'], ['Grade' => $gradeValue]);
@@ -266,6 +272,54 @@ class TeacherController extends BaseController {
 
         return $this->respond(['success' => true, 'message' => 'Grade saved successfully']);
     }
+
+    public function getExamsWithData()
+    {
+        try {
+            // Fetch exams along with options and responses
+            $exams = $this->examAssignments->getExamsWithData();
+
+            // Return the data as JSON
+            return $this->response->setJSON(['exams' => $exams]);
+        } catch (\Exception $e) {
+            // Handle errors
+            return $this->response->setStatusCode(500)->setJSON(['error' => $e->getMessage()]);
+        }
+    }
+
+    public function getTeacherSchedule()
+    {
+        try {
+            $request = $this->request->getJSON(); // Assuming the data is sent as JSON
+
+            // Get the user ID from the request
+            $userId = (int) $request->teacherId;
+
+            // Fetch the teacher ID from the teachers table based on the user ID
+            $teacher = $this->teachers->where('User_ID', $userId)->first();
+
+            if (!$teacher) {
+                // Respond with an error if the teacher is not found
+                return $this->failNotFound('Teacher not found for the given user ID.');
+            }
+
+            $teacherId = $teacher['Teacher_ID'];
+
+            // Fetch the schedule data for the specified teacher
+            $scheduleData = $this->dailyschedule->where('Teacher_ID', $teacherId)->findAll();
+
+            // Respond with the schedule data
+            return $this->respond($scheduleData);
+        } catch (\Exception $e) {
+            // Log the error
+            log_message('error', 'Error fetching teacher schedule: ' . $e->getMessage());
+
+            // Respond with a server error
+            return $this->failServerError('An unexpected error occurred.');
+        }
+    }
+
+
 
 
 

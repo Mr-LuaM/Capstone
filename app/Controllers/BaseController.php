@@ -23,7 +23,8 @@ use CodeIgniter\API\ResponseTrait;
  *
  * For security be sure to declare any new methods as protected or private.
  */
-abstract class BaseController extends ResourceController {
+abstract class BaseController extends ResourceController
+{
     use ResponseTrait;
 
     /**
@@ -63,11 +64,17 @@ abstract class BaseController extends ResourceController {
     protected $annoucements;
     protected $teachers;
     protected $teacherAssignments;
+    protected $examAssignments;
+    protected $examModel;
+    protected $questionsModel;
+    protected $responsesModel;
     protected $grades;
+    protected $dailyschedule;
     /**
      * @return void
      */
-    public function initController(RequestInterface $request, ResponseInterface $response, LoggerInterface $logger) {
+    public function initController(RequestInterface $request, ResponseInterface $response, LoggerInterface $logger)
+    {
         // Do Not Edit This Line
         parent::initController($request, $response, $logger);
 
@@ -90,6 +97,11 @@ abstract class BaseController extends ResourceController {
         $this->teachers = new \App\Models\TeachersModel();
         $this->teacherAssignments = new \App\Models\TeacherAssignments();
         $this->grades = new \App\Models\GradeModel();
+        $this->examAssignments = new \App\Models\ExamAssignmentsModel();
+        $this->examModel = new \App\Models\GradeModel();
+        $this->questionsModel = new \App\Models\QuestionsModel();
+        $this->responsesModel = new \App\Models\ResponsessModel();
+        $this->dailyschedule = new \App\Models\DailyScheduleModel();
 
 
     }

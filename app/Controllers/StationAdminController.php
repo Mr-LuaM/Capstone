@@ -6,16 +6,18 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 
 
-class StationAdminController extends BaseController {
+class StationAdminController extends BaseController
+{
 
-    public function getStationAdminEditDetails() {
+    public function getStationAdminEditDetails()
+    {
         // Get parameters from the request
         $role = $this->request->getVar('userRole');
         $secureToken = $this->request->getVar('secureToken');
         $userId = $this->request->getVar('userId');
 
 
-        if(!(int)$role === 3) {
+        if (!(int) $role === 3) {
             return $this->failNotFound('Invalid role');
         }
 
@@ -23,7 +25,7 @@ class StationAdminController extends BaseController {
         $userDetails = $this->StationAdmin->where('User_ID', $userId)->first();
 
         // Debugging information
-        if($userDetails) {
+        if ($userDetails) {
             // Output data for debugging
 
             // Use $userData as needed in your code
@@ -36,7 +38,8 @@ class StationAdminController extends BaseController {
         }
     }
 
-    public function updateStationAdminDetails() {
+    public function updateStationAdminDetails()
+    {
 
         // Retrieve data from the request
         $userId = $this->request->getPost('userId');
@@ -46,14 +49,14 @@ class StationAdminController extends BaseController {
 
 
         // Validate user role and secure token (add your own validation logic)
-        if($userRole !== '3') {
+        if ($userRole !== '3') {
             return $this->failUnauthorized('Invalid role or secure token');
         }
 
         // Fetch the stationAdmin record based on user ID
-        $stationAdmin = $this->StationAdmin->where('StationAdmin_ID', (int)$userId)->first();
+        $stationAdmin = $this->StationAdmin->where('StationAdmin_ID', (int) $userId)->first();
         //   return $this->respond($stationAdmin);
-        if(!$stationAdmin) {
+        if (!$stationAdmin) {
             return $this->failNotFound('User not found');
         }
 
@@ -63,14 +66,14 @@ class StationAdminController extends BaseController {
 
 
 
-        if($profilePicture && $profilePicture->isValid()) {
+        if ($profilePicture && $profilePicture->isValid()) {
             // Generate a new filename and move the file to the destination directory
             $newFileName = $profilePicture->getRandomName();
             $profilePicture->move('public/uploads/applicants/profiles/', $newFileName);
 
             // Update stationAdmin details including the Profile_Picture field
             $this->StationAdmin->update($userId, [
-                'Profile_Picture' => 'public/uploads/applicants/profiles/'.$newFileName,
+                'Profile_Picture' => 'public/uploads/applicants/profiles/' . $newFileName,
                 'First_Name' => $this->request->getPost('firstName'),
                 'Middle_Name' => $this->request->getPost('middleName'),
                 'Last_Name' => $this->request->getPost('lastName'),
@@ -110,7 +113,8 @@ class StationAdminController extends BaseController {
 
     }
 
-    public function getStationDetailsperStation() {
+    public function getStationDetailsperStation()
+    {
         try {
             // Get stationAdminId from the request
             $stationAdminId = $this->request->getPost('id');
@@ -119,7 +123,7 @@ class StationAdminController extends BaseController {
             $stationAdminDetails = $this->StationAdmin->where('User_ID', $stationAdminId)->first();
 
             // Check if station admin details were found
-            if(!$stationAdminDetails) {
+            if (!$stationAdminDetails) {
                 return $this->failNotFound('Station admin details not found');
             }
 
@@ -130,7 +134,7 @@ class StationAdminController extends BaseController {
             $stationDetails = $this->stations->find($stationId);
 
             // Check if station details were found
-            if(!$stationDetails) {
+            if (!$stationDetails) {
                 return $this->failNotFound('Station details not found');
             }
 
@@ -144,7 +148,7 @@ class StationAdminController extends BaseController {
             return $this->respond($stationDetails);
         } catch (\Exception $e) {
             // Log the error
-            log_message('error', 'Error fetching station details: '.$e->getMessage());
+            log_message('error', 'Error fetching station details: ' . $e->getMessage());
 
             // Respond with an error
             return $this->failServerError('Internal Server Error');
@@ -152,7 +156,8 @@ class StationAdminController extends BaseController {
     }
 
     // Helper method to get courses offered by a station
-    private function getCoursesByStation($stationId) {
+    private function getCoursesByStation($stationId)
+    {
         $courses = $this->db->table('courses')
             ->select('courses.*, stations.Station_ID, stations.Station_Name, stations.Location, stations.status as sstatus, stations.created_at as screated_at, stations.status_updated_at as sstatus_updated_at')
             ->join('stationcourses', 'courses.Course_ID = stationcourses.Course_ID')
@@ -164,14 +169,14 @@ class StationAdminController extends BaseController {
         // Organize the data as needed
         $data = [];
 
-        foreach($courses as $course) {
+        foreach ($courses as $course) {
             // Check if the course is already in $data
             $existingCourse = array_filter($data, function ($item) use ($course) {
                 return $item['Course_ID'] === $course->Course_ID;
             });
 
             // If the course is not in $data, add it
-            if(empty($existingCourse)) {
+            if (empty($existingCourse)) {
                 $courseData = [
                     'Course_ID' => $course->Course_ID,
                     'Course_Name' => $course->Course_Name,
@@ -287,7 +292,8 @@ class StationAdminController extends BaseController {
     //         return $this->respond(['success' => false, 'message' => 'Error editing station']);
     //     }
     // }
-    public function getTeacherAssignmentsDetailsperStation() {
+    public function getTeacherAssignmentsDetailsperStation()
+    {
         try {
             // Get station_id from the POST data
             $stationId = $this->request->getVar('station_id');
@@ -301,7 +307,7 @@ class StationAdminController extends BaseController {
                 ->join('users', 'teachers.User_ID = users.User_ID')
                 ->join('courses', 'teachingassignments.course_id = courses.Course_ID')
                 ->where('users.IsVerified', 1) // Add condition for IsVerified
-                ->where('teachingassignments.station_id', (int)$stationId) // Add condition for Station_ID
+                ->where('teachingassignments.station_id', (int) $stationId) // Add condition for Station_ID
                 ->get()
                 ->getResultArray();
 
@@ -314,7 +320,8 @@ class StationAdminController extends BaseController {
     }
 
 
-    public function getStationCoursesWithStudentsAndTeachers() {
+    public function getStationCoursesWithStudentsAndTeachers()
+    {
         try {
             // Get the Station_ID associated with the logged station admin
 //$stationId = $this->getLoggedInStationId(); // You need to implement the logic to get the logged-in station ID
@@ -334,14 +341,14 @@ class StationAdminController extends BaseController {
                 ->get()
                 ->getResult();
 
-            if(empty($courses)) {
+            if (empty($courses)) {
                 return $this->failNotFound('No Courses Found');
             }
 
             // Organize the data as needed
             $data = [];
 
-            foreach($courses as $course) {
+            foreach ($courses as $course) {
                 $courseData = [
                     'Course_ID' => $course->Course_ID,
                     'Course_Name' => $course->Course_Name,
@@ -352,7 +359,7 @@ class StationAdminController extends BaseController {
                     'Students' => [],
                 ];
 
-                if($course->Teacher_ID) {
+                if ($course->Teacher_ID) {
                     $courseData['Teachers'][] = [
                         'Teacher_ID' => $course->Teacher_ID,
                         'Teacher_First_Name' => $course->Teacher_First_Name,
@@ -360,7 +367,7 @@ class StationAdminController extends BaseController {
                     ];
                 }
 
-                if($course->Stud_ID) {
+                if ($course->Stud_ID) {
                     $courseData['Students'][] = [
                         'Stud_ID' => $course->Stud_ID,
                         'Student_First_Name' => $course->Student_First_Name,
@@ -373,12 +380,13 @@ class StationAdminController extends BaseController {
 
             return $this->respond($data);
         } catch (\Exception $e) {
-            log_message('error', 'Error fetching station courses: '.$e->getMessage());
+            log_message('error', 'Error fetching station courses: ' . $e->getMessage());
             return $this->failServerError('Internal Server Error');
         }
     }
 
-    public function getEnrollmentsByCourse() {
+    public function getEnrollmentsByCourse()
+    {
         try {
             $stationId = $this->request->getVar('station_id');
 
@@ -440,14 +448,14 @@ class StationAdminController extends BaseController {
                 ->join('teachingassignments as ta', 'e.Course_ID = ta.course_id', 'left')
                 ->join('teachers as t', 'ta.Teacher_ID = t.Teacher_ID', 'left')
                 ->join('courses as c', 'e.Course_ID = c.Course_ID', 'left')
-                ->where('e.Station_ID', (int)$stationId)
+                ->where('e.Station_ID', (int) $stationId)
                 ->get()
                 ->getResult();
 
             // Organize data into the desired format
             $formattedData = [];
 
-            foreach($enrollmentsByCourse as $enrollment) {
+            foreach ($enrollmentsByCourse as $enrollment) {
                 // Check if the course already exists in the formatted data
                 $existingCourse = array_search($enrollment->Enrollment_Course_ID, array_column($formattedData, 'course_details.Course_ID'));
 
@@ -504,7 +512,7 @@ class StationAdminController extends BaseController {
                     "Stud_PhoneNum" => $enrollment->Stud_PhoneNum
                 ];
 
-                if($existingCourse !== false) {
+                if ($existingCourse !== false) {
                     // Course already exists, append teacher and student details
                     $formattedData[$existingCourse]['teachers'][] = $teacherDetails;
                     $formattedData[$existingCourse]['enrolled_students'][] = $studentDetails;
@@ -524,6 +532,86 @@ class StationAdminController extends BaseController {
             return $this->fail('Failed to fetch enrollments by course', 500);
         }
     }
+
+    public function getTeacherSchedule()
+    {
+        try {
+            $request = $this->request->getJSON(); // Assuming the data is sent as JSON
+
+            // Get the teacherId from the request
+            $teacherId = (int) $request->teacherId;
+
+
+            // Fetch the schedule data for the specified teacher
+            $scheduleData = $this->dailyschedule->where('Teacher_ID', $teacherId)->findAll();
+
+            // Respond with the schedule data
+            return $this->respond($scheduleData);
+        } catch (\Exception $e) {
+            // Log the error
+            log_message('error', 'Error fetching teacher schedule: ' . $e->getMessage());
+
+            // Respond with a server error
+            return $this->failServerError('An unexpected error occurred.');
+        }
+    }
+
+    public function saveSchedule()
+    {
+        try {
+            // Assuming the data is sent as form data
+            $teacherId = $this->request->getPost('teacherId');
+            $title = $this->request->getPost('title');
+            $description = $this->request->getPost('description');
+            $daysOfWeek = $this->request->getPost('daysOfWeek');
+            $monthFrom = $this->request->getPost('monthFrom');
+            $monthTo = $this->request->getPost('monthTo');
+            $timeFrom = $this->request->getPost('timeFrom');
+            $timeTo = $this->request->getPost('timeTo');
+            // Add other fields as needed...
+
+            // Convert string values to appropriate types if necessary
+            $data = [
+                'Teacher_ID' => (int) $teacherId,
+                'Title' => $title,
+                'Description' => $description,
+                'DaysOfWeek' => $daysOfWeek,
+                'MonthFrom' => $this->adjustMonthFrom($monthFrom), // Use a function to adjust MonthFrom
+                'MonthTo' => $this->adjustMonthTo($monthTo), // Use a function to adjust MonthTo
+                'TimeFrom' => $timeFrom,
+                'TimeTo' => $timeTo,
+                // Add other fields as needed...
+            ];
+
+            // Insert data into the database
+            $this->dailyschedule->insert($data);
+
+            return $this->respondCreated(['message' => 'Schedule saved successfully']);
+        } catch (\Exception $e) {
+            // Log the error
+            log_message('error', 'Error saving schedule: ' . $e->getMessage());
+
+            // Respond with a server error
+            return $this->failServerError('An unexpected error occurred.');
+        }
+    }
+
+    // Function to adjust MonthFrom to the first day of the month
+    private function adjustMonthFrom($monthFrom)
+    {
+        $firstDayOfMonth = date('Y-m-01', strtotime($monthFrom));
+        return $firstDayOfMonth;
+    }
+
+    // Function to adjust MonthTo to the last day of the month
+    private function adjustMonthTo($monthTo)
+    {
+        $lastDayOfMonth = date('Y-m-t', strtotime($monthTo));
+        return $lastDayOfMonth;
+    }
+
+
+
 
 
 
