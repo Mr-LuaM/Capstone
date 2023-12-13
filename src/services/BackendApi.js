@@ -54,6 +54,15 @@ export async function getApplicants() {
     throw error; // Rethrow the error
   }
 }
+export async function getApplicantsHistory() {
+  try {
+    const applicants = await axios.get("getApplicantsHistory");
+    return applicants.data; // Return the data
+  } catch (error) {
+    console.log(error);
+    throw error; // Rethrow the error
+  }
+}
 
 export async function getStationAdminsWithStation() {
   try {

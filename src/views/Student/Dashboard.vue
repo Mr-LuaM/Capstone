@@ -31,21 +31,12 @@
         </v-container>
       </v-col>
       <v-col>
-        <v-row>
-          <v-col class="ma-1 pa-2"> <UserStatistics /></v-col>
-
-          <v-col class="ma-1 pa-2"> <StationAdminStatistics /></v-col>
-
-          <v-col class="ma-1 pa-2"> <TeacherStatistics /></v-col>
-
-          <v-col class="ma-1 pa-2"> <StudentStatistics /></v-col>
-        </v-row>
-        <v-divider :thickness="6" class="mt-5" color="success"></v-divider>
+        <ProgressBar />
       </v-col>
     </v-row>
     <v-row>
-      <v-col cols="4" class="ma-1 pa-2"> <LineChart /></v-col>
-      <v-col cols="4" class="ma-1 pa-2"><StackChart /></v-col>
+      <v-col cols="8" class="ma-1 pa-2"> <SchoolCalendar /></v-col>
+
       <v-col class="ma-1 pa-2">
         <v-card class="mx-auto" max-width="450">
           <v-toolbar color="secondary-darken-1">
@@ -70,12 +61,14 @@
 
 <script>
 import { mapGetters } from "vuex";
-import UserStatistics from "../../../components/dashboard/UserStatistics";
-import StationAdminStatistics from "../../../components/dashboard/StationAdminStatistics";
-import TeacherStatistics from "../../../components/dashboard/TeacherStatistics";
-import StudentStatistics from "../../../components/dashboard/StudentStatisctics";
-import LineChart from "../../../components/dashboard/linechart";
-import StackChart from "../../../components/dashboard/stackchart";
+import UserStatistics from "../../components/dashboard/UserStatistics";
+import StationAdminStatistics from "../../components/dashboard/StationAdminStatistics";
+import TeacherStatistics from "../../components/dashboard/TeacherStatistics";
+import StudentStatistics from "../../components/dashboard/StudentStatisctics";
+import LineChart from "../../components/dashboard/linechart";
+import StackChart from "../../components/dashboard/stackchart";
+import SchoolCalendar from "@/components/scheduler/SchoolCalendar.vue";
+import ProgressBar from "@/components/dashboard/progressbar.vue";
 
 export default {
   components: {
@@ -85,6 +78,8 @@ export default {
     StudentStatistics,
     LineChart,
     StackChart,
+    SchoolCalendar,
+    ProgressBar,
   },
   name: "AvatarMenu",
   data() {
@@ -154,8 +149,7 @@ export default {
 </script>
 <style scoped>
 .bg-image {
-  background: url("../../../assets/img/examples/f2wuB.png") no-repeat right
-    bottom;
+  background: url("../../assets/img/examples/f2wuB.png") no-repeat right bottom;
   background-size: contain; /* Adjust the background-size property as needed */
   min-height: 150px; /* Set the minimum height to match the height of the avatar */
   position: relative;

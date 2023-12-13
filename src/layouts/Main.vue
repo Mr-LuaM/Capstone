@@ -86,6 +86,14 @@
           >
             <v-list-item-title>Announcements</v-list-item-title>
           </v-list-item>
+          <v-list-item
+            link
+            to="/admin/history"
+            :class="{ highlight: isRouteActive('/admin/history') }"
+            prepend-icon="mdi-history"
+          >
+            <v-list-item-title>Applicants History</v-list-item-title>
+          </v-list-item>
 
           <v-container>
             <v-divider></v-divider>

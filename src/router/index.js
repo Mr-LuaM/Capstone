@@ -71,6 +71,12 @@ const routes = [
           import("../views/Admin/centralAdmin/caAnnouncement.vue"),
       },
       {
+        path: "history",
+        name: "history",
+        component: () =>
+          import("../views/Admin/centralAdmin/caApplicantHistory.vue"),
+      },
+      {
         path: "edit-accounts",
         name: "caEditAccounts",
         component: () =>
@@ -90,17 +96,7 @@ const routes = [
       },
     ],
   },
-  {
-    path: "/student",
-    component: StudNav,
-    children: [
-      {
-        path: "home",
-        name: "studentHome",
-        component: () => import("../views/Student/Home.vue"),
-      },
-    ],
-  },
+
   {
     path: "/station",
     component: Station,
@@ -188,6 +184,28 @@ const routes = [
         path: "exams",
         name: "tExam",
         component: () => import("../views/Teachers/t.Exams.vue"),
+      },
+    ],
+  },
+  {
+    path: "/student",
+    component: StudNav,
+    meta: { requiredRoles: ["5"] },
+    children: [
+      {
+        path: "dashboard",
+        name: "sDashboard",
+        component: () => import("../views/Student/Dashboard.vue"),
+      },
+      {
+        path: "announcements",
+        name: "sAnnouncement",
+        component: () => import("../views/Student/announcement.vue"),
+      },
+      {
+        path: "edit-accounts",
+        name: "sEditAccounts",
+        component: () => import("../views/Student/Profile.vue"),
       },
     ],
   },

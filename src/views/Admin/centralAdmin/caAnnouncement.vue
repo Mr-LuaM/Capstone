@@ -1,7 +1,7 @@
 <template>
   <v-container fluid class="rounded-lg bg-surface">
     <v-card>
-      <v-toolbar color="primary-darken-1">
+      <v-toolbar color="secondary-darken-1">
         <v-app-bar-nav-icon>
           <v-icon icon="mdi-post"></v-icon>
         </v-app-bar-nav-icon>
@@ -11,8 +11,13 @@
         <v-spacer></v-spacer>
 
         <template v-slot:extension>
-          <v-tabs v-model="tab" centered bg-color="primary" grow>
-            <v-tab value="Announcement">Announcement</v-tab>
+          <v-tabs
+            v-model="tab"
+            centered
+            bg-color="primary-darken-1"
+            align-tabs="title"
+          >
+            <v-tab value="Announcement" class="rounded-lg">Announcement</v-tab>
           </v-tabs>
         </template>
       </v-toolbar>

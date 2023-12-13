@@ -215,7 +215,7 @@ export default {
           6: "/applicant-dashboard",
           2: "/admin/applicants",
           3: "/station/dashboard",
-          5: "/admin/applicants",
+          5: "/student/dashboard",
           4: "/teacher/dashboard",
         };
 
