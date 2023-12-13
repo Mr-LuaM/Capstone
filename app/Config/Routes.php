@@ -14,6 +14,10 @@ $routes->get('/getStationAdminStatistics', 'DashboardController::getStationAdmin
 $routes->get('/getTeacherStatistics', 'DashboardController::getTeacherStatistics');
 $routes->get('/getStudentStatistics', 'DashboardController::getStudentStatistics');
 $routes->get('/getApplicantsStatistics', 'DashboardController::getApplicantsStatistics');
+$routes->get('/getEnrollmentTrends', 'DashboardController::getEnrollmentTrends');
+$routes->get('/getCourseTrends', 'DashboardController::getCourseTrends');
+$routes->get('/getStudentStatisticsperStation/(:num)', 'StationAdminController::getStudentStatisticsperStation/$1');
+$routes->get('/getTeacherStatisticsperStation/(:num)', 'StationAdminController::getTeacherStatisticsperStation/$1');
 
 
 
@@ -41,6 +45,7 @@ $routes->post('/submitApplication', 'ApplicantsController::submitApplication');
 
 
 $routes->get('/getApplicants', 'MainAdminController::getApplicants');
+$routes->get('/getApplicantsHistory', 'MainAdminController::getApplicantsHistory');
 $routes->post('approve', 'MainAdminController::approve');
 $routes->post('reject/(:any)', 'MainAdminController::reject/$1');
 $routes->post('editStation', 'MainAdminController::editStation');
@@ -73,6 +78,7 @@ $routes->post('/saveSchedule', 'StationAdminController::saveSchedule');
 $routes->post('/getTeacherSchedule', 'StationAdminController::getTeacherSchedule');
 
 
+
 $routes->post('updateTeacherDetails', 'TeacherController::updateTeacherDetails');
 $routes->post('getTeacherEditDetails', 'TeacherController::getTeacherEditDetails');
 $routes->post('getStudents', 'TeacherController::getStudents');
@@ -80,6 +86,15 @@ $routes->post('importGradesHandler', 'TeacherController::importGrades');
 $routes->post('editGrade', 'TeacherController::saveGrade');
 $routes->get('fetch-exams-with-options-and-responses', 'TeacherController::fetch-exams-with-options-and-responses');
 $routes->post('/getTeacherSchedule1', 'TeacherController::getTeacherSchedule');
+
+
+
+$routes->post('getstudentEditDetails', 'StudentController::getstudentEditDetails');
+$routes->post('updateStudentDetails', 'StudentController::updateStudentDetails');
+$routes->post('getStudentSchedule', 'StudentController::getStudentSchedule');
+$routes->post('/getStudentProgressByUserId', 'StudentController::getStudentProgressByUserId');
+
+
 
 
 $routes->get('generateSecureToken/(:num)', 'AuthController::generateSecureToken/$1');

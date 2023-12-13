@@ -5,19 +5,38 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use App\Traits\SecureTokenTrait;
 
-class MainAdminController extends BaseController {
+class MainAdminController extends BaseController
+{
 
     use SecureTokenTrait;
 
-    public function getApplicants() {
+    public function getApplicants()
+    {
+        // Get the current year
+        $currentYear = date("Y");
+
+        // Query to find all applicants from the current year
+        // Replace 'your_date_field' with the actual field name that stores the date
+        $data = $this->applicants->where("YEAR(Date_OF_Application)", $currentYear)->findAll();
+
+        if (empty($data)) {
+            return $this->failNotFound('No Applicants Found for Current Year');
+        }
+
+        return $this->respond($data);
+    }
+    public function getApplicantsHistory()
+    {
         $data = $this->applicants->findAll();
-        if(empty($data)) {
+        if (empty($data)) {
             return $this->failNotFound('No Courses Found');
         }
         return $this->respond($data);
 
     }
-    public function approve() {
+
+    public function approve()
+    {
         try {
             $this->db->transStart(); // Start a transaction
 
@@ -29,20 +48,20 @@ class MainAdminController extends BaseController {
                 'Name_Extension' => $this->request->getPost('Name_Extension'),
                 'Sex' => $this->request->getPost('Sex'),
                 'Bdate' => $this->request->getVar('Bdate'),
-                'Age' => (int)$this->request->getVar('Age'),
+                'Age' => (int) $this->request->getVar('Age'),
                 'Nationality' => $this->request->getPost('Nationality'),
                 'Religion' => $this->request->getPost('Religion'),
                 'Address' => $this->request->getPost('Address'),
                 'Email' => $this->request->getPost('Email'),
                 'Phone_Number' => $this->request->getPost('Phone_Number'),
-                'Profile' => $this->request->getPost('Profile'),
+                'Profile_Picture' => $this->request->getPost('Profile'),
                 'approvedCourse' => $this->request->getPost('approvedCourse'),
                 'approvedStation' => $this->request->getPost('approvedStation'),
                 'Status' => $this->request->getPost('Status'),
             ];
 
             // Check if the applicant status is 'Pending'
-            if($data['Status'] !== 'pending') {
+            if ($data['Status'] !== 'pending') {
                 // Return an error response or handle it appropriately
                 return $this->fail('Applicant status must be "Pending" to approve.', 400);
             }
@@ -50,11 +69,11 @@ class MainAdminController extends BaseController {
             // Check if the user already exists
             $existingUser = $this->users->where('Email', $data['Email'])->first();
 
-            if($existingUser) {
+            if ($existingUser) {
                 // Check if the user is not already a student
                 $existingStudent = $this->students->where('User_ID', $existingUser['User_ID'])->first();
 
-                if(!$existingStudent) {
+                if (!$existingStudent) {
                     // Define user role
                     $userFields = [
                         'Role_ID' => 5,  // Set the role ID as needed
@@ -131,10 +150,11 @@ class MainAdminController extends BaseController {
 
 
 
-    public function reject($id) {
+    public function reject($id)
+    {
         try {
             // Validate the input id
-            if(!is_numeric($id) || $id < 1) {
+            if (!is_numeric($id) || $id < 1) {
                 return $this->fail('Invalid applicant id.', 400);
             }
 
@@ -143,19 +163,19 @@ class MainAdminController extends BaseController {
 
 
             // Validate the secure token
-            if(!$this->validateSecureToken($id, $secureToken)) {
+            if (!$this->validateSecureToken($id, $secureToken)) {
                 return $this->fail('Invalid secure token.', 400);
             }
 
             // Find the applicant by id
             $applicant = $this->applicants->find($id);
 
-            if(!$applicant) {
+            if (!$applicant) {
                 // Applicant with the given id not found
                 return $this->fail('Applicant not found.', 404);
             }
 
-            if($applicant['Status'] !== 'pending') {
+            if ($applicant['Status'] !== 'pending') {
                 // Return an error response or handle it appropriately
                 return $this->fail('Applicant status must be "Pending" to reject.', 400);
             }
@@ -172,7 +192,8 @@ class MainAdminController extends BaseController {
         }
     }
 
-    public function editStation() {
+    public function editStation()
+    {
         $request = service('request');
 
         // Validate the request data
@@ -184,7 +205,7 @@ class MainAdminController extends BaseController {
             'Courses_Offered.*.Course_ID' => 'required|integer', // Assuming Course_ID is the ID
         ]);
 
-        if(!$this->validation->withRequest($this->request)->run()) {
+        if (!$this->validation->withRequest($this->request)->run()) {
             return $this->failValidationErrors($this->validation->getErrors());
         }
 
@@ -216,10 +237,10 @@ class MainAdminController extends BaseController {
 
 
             // Compare the existing courses with the courses received in the form
-            foreach($coursesOffered as $courseData) {
+            foreach ($coursesOffered as $courseData) {
                 $courseId = $courseData['Course_ID']; // Assuming Course_ID is the ID
 
-                if(!in_array($courseId, $existingCourseIds)) {
+                if (!in_array($courseId, $existingCourseIds)) {
                     // Course is not linked to the station, so add it
                     $courseData['Station_ID'] = $stationId;
                     $this->stationCourses->insert($courseData);
@@ -227,12 +248,12 @@ class MainAdminController extends BaseController {
             }
 
             // Check for removed courses
-            foreach($existingCourses as $existingCourse) {
+            foreach ($existingCourses as $existingCourse) {
                 $existingCourseId = $existingCourse['Course_ID'];
                 $existingStationCourseId = $existingCourse['StationCourse_ID'];
 
                 // Check if the existing course is not present in the received form data
-                if(!in_array($existingCourseId, array_column($coursesOffered, 'Course_ID'))) {
+                if (!in_array($existingCourseId, array_column($coursesOffered, 'Course_ID'))) {
                     // Course is in the database but not in the form, so remove it
                     $this->stationCourses->delete(['StationCourse_ID' => $existingStationCourseId]);
                 }
@@ -250,7 +271,8 @@ class MainAdminController extends BaseController {
         }
     }
 
-    public function addStation() {
+    public function addStation()
+    {
         $request = service('request');
 
         // Validate the request data
@@ -261,7 +283,7 @@ class MainAdminController extends BaseController {
             'Courses_Offered.*.Course_ID' => 'required|integer',
         ]);
 
-        if(!$this->validation->withRequest($this->request)->run()) {
+        if (!$this->validation->withRequest($this->request)->run()) {
             return $this->failValidationErrors($this->validation->getErrors());
         }
 
@@ -292,7 +314,7 @@ class MainAdminController extends BaseController {
 
 
             // Save the associated courses
-            foreach($coursesOffered as $courseData) {
+            foreach ($coursesOffered as $courseData) {
                 $courseId = $courseData['Course_ID'];
                 $courseData['Station_ID'] = $stationId;
                 $this->stationCourses->insert($courseData);
@@ -310,9 +332,10 @@ class MainAdminController extends BaseController {
         }
     }
 
-    public function toggleStatus($id) {
+    public function toggleStatus($id)
+    {
         try {
-            if(!is_numeric($id) || $id < 1) {
+            if (!is_numeric($id) || $id < 1) {
                 return $this->fail('Invalid applicant id.', 400);
             }
 
@@ -321,19 +344,19 @@ class MainAdminController extends BaseController {
 
 
             // Validate the secure token
-            if(!$this->validateSecureToken($id, $secureToken)) {
+            if (!$this->validateSecureToken($id, $secureToken)) {
                 return $this->fail('Invalid secure token.', 400);
             }
 
             // Find the applicant by id
             $station = $this->stations->find($id);
 
-            if(!$station) {
+            if (!$station) {
                 // Applicant with the given id not found
                 return $this->fail('Applicant not found.', 404);
             }
 
-            if($station['status'] !== 'active') {
+            if ($station['status'] !== 'active') {
                 // Return an error response or handle it appropriately
                 $this->stations->update($id, ['status' => 'active']);
             } else {
@@ -347,7 +370,8 @@ class MainAdminController extends BaseController {
         }
     }
 
-    public function addCourse() {
+    public function addCourse()
+    {
         $request = service('request');
 
         // Validate the request data
@@ -360,7 +384,7 @@ class MainAdminController extends BaseController {
             'Station_Offering.*.Station_ID' => 'required|integer',
         ]);
 
-        if(!$this->validation->withRequest($request)->run()) {
+        if (!$this->validation->withRequest($request)->run()) {
             log_message('debug', print_r($this->validation->getErrors(), true));
             return $this->failValidationErrors($this->validation->getErrors());
         }
@@ -384,7 +408,7 @@ class MainAdminController extends BaseController {
 
             // Save the associated stations
             $stationsOffering = $request->getPost('Station_Offering');
-            foreach($stationsOffering as $stationData) {
+            foreach ($stationsOffering as $stationData) {
                 $stationId = $stationData['Station_ID'];
                 $this->stationCourses->insert([
                     'Station_ID' => $stationId,
@@ -404,7 +428,8 @@ class MainAdminController extends BaseController {
         }
     }
 
-    public function editCourse() {
+    public function editCourse()
+    {
         $request = service('request');
 
         // Validate the request data
@@ -418,7 +443,7 @@ class MainAdminController extends BaseController {
             'Station_Offering.*Station_ID' => 'required|integer',
         ]);
 
-        if(!$this->validation->withRequest($request)->run()) {
+        if (!$this->validation->withRequest($request)->run()) {
             return $this->failValidationErrors($this->validation->getErrors());
         }
 
@@ -426,8 +451,8 @@ class MainAdminController extends BaseController {
         $courseId = $request->getPost('Course_ID');
         $courseName = $request->getPost('Course_Name');
         $courseDetails = $request->getPost('Course_Description');
-        $duration = (int)$request->getPost('Duration');
-        $credits = (int)$request->getPost('Credits');
+        $duration = (int) $request->getPost('Duration');
+        $credits = (int) $request->getPost('Credits');
         $status = $request->getPost('status');
         $stationOffering = $request->getPost('Station_Offering');
 
@@ -455,7 +480,7 @@ class MainAdminController extends BaseController {
             $this->stationCourses->where('Course_ID', $courseId)->delete();
 
             // Now, insert the new associations
-            foreach($stationOffering as $stationId) {
+            foreach ($stationOffering as $stationId) {
                 $this->stationCourses->insert([
                     'Course_ID' => $courseId,
                     'Station_ID' => $stationId,
@@ -473,9 +498,10 @@ class MainAdminController extends BaseController {
             return $this->respond(['success' => false, 'message' => 'Error updating course']);
         }
     }
-    public function toggleCourseStatus($id) {
+    public function toggleCourseStatus($id)
+    {
         try {
-            if(!is_numeric($id) || $id < 1) {
+            if (!is_numeric($id) || $id < 1) {
                 return $this->fail('Invalid course id.', 400);
             }
 
@@ -484,19 +510,19 @@ class MainAdminController extends BaseController {
 
 
             // Validate the secure token
-            if(!$this->validateSecureToken($id, $secureToken)) {
+            if (!$this->validateSecureToken($id, $secureToken)) {
                 return $this->fail('Invalid secure token.', 400);
             }
 
             // Find the applicant by id
             $station = $this->courses->find($id);
 
-            if(!$station) {
+            if (!$station) {
                 // Applicant with the given id not found
                 return $this->fail('Course not found.', 404);
             }
 
-            if($station['status'] !== 'active') {
+            if ($station['status'] !== 'active') {
                 // Return an error response or handle it appropriately
                 $this->courses->update($id, ['status' => 'active']);
             } else {
@@ -509,7 +535,8 @@ class MainAdminController extends BaseController {
             return $this->respond(['success' => false, 'message' => 'Error toggling station status']);
         }
     }
-    public function getStationAdminsWithStation() {
+    public function getStationAdminsWithStation()
+    {
         $data = $this->db->table('stationadmins')
             ->join('stations', 'stationadmins.Station_ID = stations.Station_ID', 'left') // LEFT JOIN with stations table
             ->join('users', 'stationadmins.User_ID = users.User_ID') // INNER JOIN with users table
@@ -521,9 +548,10 @@ class MainAdminController extends BaseController {
     }
 
 
-    public function toggleStationAdminStatus($id) {
+    public function toggleStationAdminStatus($id)
+    {
         try {
-            if(!is_numeric($id) || $id < 1) {
+            if (!is_numeric($id) || $id < 1) {
                 return $this->fail('Invalid course id.', 400);
             }
 
@@ -532,19 +560,19 @@ class MainAdminController extends BaseController {
 
 
             // Validate the secure token
-            if(!$this->validateSecureToken($id, $secureToken)) {
+            if (!$this->validateSecureToken($id, $secureToken)) {
                 return $this->fail('Invalid secure token.', 400);
             }
 
             // Find the applicant by id
             $station = $this->StationAdmin->find($id);
 
-            if(!$station) {
+            if (!$station) {
                 // Applicant with the given id not found
                 return $this->fail('Course not found.', 404);
             }
 
-            if($station['Status'] !== 'active') {
+            if ($station['Status'] !== 'active') {
                 // Return an error response or handle it appropriately
                 $this->StationAdmin->update($id, ['Status' => 'active']);
             } else {
@@ -557,7 +585,8 @@ class MainAdminController extends BaseController {
             return $this->respond(['success' => false, 'message' => 'Error toggling station status']);
         }
     }
-    public function changeAdminStation() {
+    public function changeAdminStation()
+    {
         try {
             $stationId = $this->request->getPost('Station_ID');
             $stationAdminId = $this->request->getPost('Station_Admin_ID');
@@ -566,7 +595,7 @@ class MainAdminController extends BaseController {
             // Get the admin by StationAdmin_ID
             $admin = $this->StationAdmin->find($stationAdminId);
 
-            if(!$admin) {
+            if (!$admin) {
                 return $this->respond(['error' => 'Admin not found'], 404);
             }
 
@@ -580,13 +609,14 @@ class MainAdminController extends BaseController {
             return $this->respond(['success' => true, 'message' => 'Station updated successfully']);
         } catch (\Exception $e) {
             // Log the exception for debugging and auditing
-            log_message('error', 'Exception during changeAdminStation: '.$e->getMessage());
+            log_message('error', 'Exception during changeAdminStation: ' . $e->getMessage());
 
             // Return an error response
             return $this->respond(['error' => 'An error occurred'], 500);
         }
     }
-    public function changeTeacherStation() {
+    public function changeTeacherStation()
+    {
         try {
             $stationId = $this->request->getPost('Station_ID');
             $teacherId = $this->request->getPost('Station_Admin_ID'); // Change to Teacher_ID
@@ -594,7 +624,7 @@ class MainAdminController extends BaseController {
             // Get the teacher by Teacher_ID
             $teacher = $this->teacherAssignments->where('Teacher_ID', $teacherId)->first();
 
-            if(!$teacher) {
+            if (!$teacher) {
                 return $this->respond(['error' => 'Teacher not found'], 404);
             }
 
@@ -610,20 +640,21 @@ class MainAdminController extends BaseController {
             return $this->respond(['success' => true, 'message' => 'Station updated successfully']);
         } catch (\Exception $e) {
             // Log the exception for debugging and auditing
-            log_message('error', 'Exception during changeTeacherStation: '.$e->getMessage());
+            log_message('error', 'Exception during changeTeacherStation: ' . $e->getMessage());
 
             // Return an error response
             return $this->respond(['error' => 'An error occurred'], 500);
         }
     }
 
-    public function getAdminEditDetails() {
+    public function getAdminEditDetails()
+    {
         // Get parameters from the request
         $role = $this->request->getVar('userRole');
         $secureToken = $this->request->getVar('secureToken');
         $userId = $this->request->getVar('userId');
 
-        if(!(int)$role === 1) {
+        if (!(int) $role === 1) {
             return $this->failNotFound('Invalid role');
         }
 
@@ -631,7 +662,7 @@ class MainAdminController extends BaseController {
         $userDetails = $this->mainAdmin->where('User_ID', $userId)->first();
 
         // Debugging information
-        if($userDetails) {
+        if ($userDetails) {
             // Output data for debugging
 
             // Use $userData as needed in your code
@@ -647,7 +678,8 @@ class MainAdminController extends BaseController {
 
 
 
-    public function updateMainAdminDetails() {
+    public function updateMainAdminDetails()
+    {
 
         // Retrieve data from the request
         $userId = $this->request->getPost('userId');
@@ -657,14 +689,14 @@ class MainAdminController extends BaseController {
 
 
         // Validate user role and secure token (add your own validation logic)
-        if($userRole !== '2') {
+        if ($userRole !== '2') {
             return $this->failUnauthorized('Invalid role or secure token');
         }
 
         // Fetch the MainAdmin record based on user ID
-        $mainAdmin = $this->mainAdmin->where('MainAdmin_ID', (int)$userId)->first();
+        $mainAdmin = $this->mainAdmin->where('MainAdmin_ID', (int) $userId)->first();
 
-        if(!$mainAdmin) {
+        if (!$mainAdmin) {
             return $this->failNotFound('User not found');
         }
 
@@ -673,14 +705,14 @@ class MainAdminController extends BaseController {
 
 
 
-        if($profilePicture && $profilePicture->isValid()) {
+        if ($profilePicture && $profilePicture->isValid()) {
             // Generate a new filename and move the file to the destination directory
             $newFileName = $profilePicture->getRandomName();
             $profilePicture->move('public/uploads/applicants/profiles/', $newFileName);
 
             // Update MainAdmin details including the Profile_Picture field
             $this->mainAdmin->update($userId, [
-                'Profile_Picture' => 'public/uploads/applicants/profiles/'.$newFileName,
+                'Profile_Picture' => 'public/uploads/applicants/profiles/' . $newFileName,
                 'First_Name' => $this->request->getPost('firstName'),
                 'Middle_Name' => $this->request->getPost('middleName'),
                 'Last_Name' => $this->request->getPost('lastName'),
@@ -722,7 +754,8 @@ class MainAdminController extends BaseController {
     }
 
     // Assuming this is your controller method to update an announcement
-    public function updateAnnouncement() {
+    public function updateAnnouncement()
+    {
         // Retrieve data from the form
         $title = $this->request->getPost('title');
         $id = $this->request->getPost('id');
@@ -732,11 +765,11 @@ class MainAdminController extends BaseController {
         $image = $this->request->getFile('picture_url');
 
         // Check if the image is provided and is valid
-        if($image !== null && $image->isValid() && !$image->hasMoved()) {
+        if ($image !== null && $image->isValid() && !$image->hasMoved()) {
             // Move the uploaded image to a designated folder
             $newName = $image->getRandomName();
-            $image->move(ROOTPATH.'public/uploads', $newName);
-            $pictureUrl = 'uploads/'.$newName;
+            $image->move(ROOTPATH . 'public/uploads', $newName);
+            $pictureUrl = 'uploads/' . $newName;
 
             // Update the announcement with the new image
             $this->annoucements->update($id, [
@@ -757,7 +790,8 @@ class MainAdminController extends BaseController {
         // Respond with a success message
         return $this->respond(['success' => true, 'message' => 'Announcement updated successfully']);
     }
-    public function addAnnouncement() {
+    public function addAnnouncement()
+    {
         // Retrieve data from the form
         $title = $this->request->getPost('title');
         $content = $this->request->getPost('content');
@@ -767,11 +801,11 @@ class MainAdminController extends BaseController {
         $userID = $this->request->getPost('user_ID');
 
         // Check if the image is provided and is valid
-        if($image !== null && $image->isValid() && !$image->hasMoved()) {
+        if ($image !== null && $image->isValid() && !$image->hasMoved()) {
             // Move the uploaded image to a designated folder
             $newName = $image->getRandomName();
-            $image->move(ROOTPATH.'public/uploads', $newName);
-            $pictureUrl = 'uploads/'.$newName;
+            $image->move(ROOTPATH . 'public/uploads', $newName);
+            $pictureUrl = 'uploads/' . $newName;
 
             // Add a new announcement with the image
             $this->annoucements->insert([
@@ -797,13 +831,14 @@ class MainAdminController extends BaseController {
         return $this->respond(['success' => true, 'message' => 'Announcement added successfully']);
     }
 
-    public function removeAnnouncement($id) {
+    public function removeAnnouncement($id)
+    {
         try {
             // Verify the secure token (implement the logic in your backend)
             $secureToken = $this->request->getPost('secureToken');
             $isValidToken = $this->validateSecureToken($id, $secureToken);
 
-            if($isValidToken) {
+            if ($isValidToken) {
                 // Perform the actual removal of the announcement (use your model)
                 $this->annoucements->delete($id);
 
@@ -815,11 +850,12 @@ class MainAdminController extends BaseController {
             }
         } catch (\Exception $e) {
             // Handle exceptions and respond with an error message
-            return $this->respond(['success' => false, 'message' => 'Error removing announcement: '.$e->getMessage()], 500);
+            return $this->respond(['success' => false, 'message' => 'Error removing announcement: ' . $e->getMessage()], 500);
         }
     }
 
-    public function getTeacherAssignmentsDetails() {
+    public function getTeacherAssignmentsDetails()
+    {
         $builder = $this->db->table('Users U');
         $builder->select('U.Email AS User_Email, U.Role_ID AS User_Role, T.*, TA.TeachingAssignment_ID, TA.course_id, TA.station_id, S.Station_Name, C.Course_Name');
         $builder->join('Teachers T', 'U.User_ID = T.User_ID');
@@ -833,9 +869,10 @@ class MainAdminController extends BaseController {
     }
 
 
-    public function toggleTeacherStatus($id) {
+    public function toggleTeacherStatus($id)
+    {
         try {
-            if(!is_numeric($id) || $id < 1) {
+            if (!is_numeric($id) || $id < 1) {
                 return $this->fail('Invalid applicant id.', 400);
             }
 
@@ -844,19 +881,19 @@ class MainAdminController extends BaseController {
 
 
             // Validate the secure token
-            if(!$this->validateSecureToken($id, $secureToken)) {
+            if (!$this->validateSecureToken($id, $secureToken)) {
                 return $this->fail('Invalid secure token.', 400);
             }
 
             // Find the applicant by id
             $teachers = $this->teachers->find($id);
 
-            if(!$teachers) {
+            if (!$teachers) {
                 // Applicant with the given id not found
                 return $this->fail('Applicant not found.', 404);
             }
 
-            if($teachers['Status'] !== 'active') {
+            if ($teachers['Status'] !== 'active') {
                 // Return an error response or handle it appropriately
                 $this->teachers->update($id, ['Status' => 'active']);
             } else {
@@ -869,7 +906,8 @@ class MainAdminController extends BaseController {
             return $this->respond(['success' => false, 'message' => 'Error toggling station status']);
         }
     }
-    public function changeTeacherCourse() {
+    public function changeTeacherCourse()
+    {
         try {
             $Course_ID = $this->request->getPost('Course_ID');
             $Teacher_ID = $this->request->getPost('Teacher_ID'); // Change to Teacher_ID
@@ -877,7 +915,7 @@ class MainAdminController extends BaseController {
             // Get the teacher by Teacher_ID
             $teacher = $this->teacherAssignments->where('Teacher_ID', $Teacher_ID)->first();
 
-            if(!$teacher) {
+            if (!$teacher) {
                 return $this->respond(['error' => 'Teacher not found'], 404);
             }
 
@@ -893,7 +931,7 @@ class MainAdminController extends BaseController {
             return $this->respond(['success' => true, 'message' => 'Station updated successfully']);
         } catch (\Exception $e) {
             // Log the exception for debugging and auditing
-            log_message('error', 'Exception during changeTeacherStation: '.$e->getMessage());
+            log_message('error', 'Exception during changeTeacherStation: ' . $e->getMessage());
 
             // Return an error response
             return $this->respond(['error' => 'An error occurred'], 500);

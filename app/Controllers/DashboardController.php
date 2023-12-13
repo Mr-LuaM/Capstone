@@ -129,20 +129,70 @@ class DashboardController extends BaseController
 
         return $this->response->setJSON($data);
     }
-
     public function getEnrollmentTrends()
     {
-        $builder = $this->db->table('applicants');
-        $builder->select('YEAR(Date_Of_Application) as Year, COUNT(*) as TotalEnrollments');
-        $builder->groupBy('YEAR(Date_Of_Application)');
-        $builder->orderBy('TotalEnrollments', 'DESC');
-        $query = $builder->get();
+        // Initialize your ApplicantsModel
+        $applicantsModel = $this->applicants;
 
-        $r = $query->getResultArray();
+        // Modify this query based on your database structure
+        $trendsData = $applicantsModel->select('YEAR(Date_Of_Application) as Year, 
+            SUM(CASE WHEN Status = "Approved" THEN 1 ELSE 0 END) as Approved, 
+            SUM(CASE WHEN Status = "Rejected" THEN 1 ELSE 0 END) as Rejected')
+            ->groupBy('YEAR(Date_Of_Application)')
+            ->orderBy('Year')
+            ->get()
+            ->getResultArray();
 
-        return $this->response->setJSON($r);
-
+        return $this->response->setJSON($trendsData);
     }
+
+
+    public function getCourseTrends()
+    {
+        // Create an array to store the counts for each course
+        $courseCounts = [];
+
+        // Define the columns to count
+        $courseColumns = ['Course1', 'Course2', 'Course3'];
+
+        // Loop through each column
+        foreach ($courseColumns as $column) {
+            $query = $this->db->table('applicants');
+            $query->select("$column as Course, COUNT(*) as Count");
+            $query->groupBy("$column");
+            $result = $query->get()->getResultArray();
+
+            // Merge the counts into the courseCounts array
+            foreach ($result as $row) {
+                $course = $row['Course'];
+                $count = $row['Count'];
+
+                // Check if the course is not null or empty
+                if (!empty($course)) {
+                    // If the course already exists in the array, add the count, otherwise, initialize it
+                    if (array_key_exists($course, $courseCounts)) {
+                        $courseCounts[$course] += $count;
+                    } else {
+                        $courseCounts[$course] = $count;
+                    }
+                }
+            }
+        }
+
+        // Prepare the data for charting
+        $chartData = [];
+        foreach ($courseCounts as $course => $count) {
+            $chartData[] = [
+                'Course' => $course,
+                'Enrollments' => $count,
+            ];
+        }
+
+        return $this->response->setJSON($chartData);
+    }
+
+
+
 
 
 }

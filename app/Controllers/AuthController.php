@@ -6,28 +6,31 @@ use App\Controllers\BaseController;
 use App\Traits\SecureTokenTrait;
 use \Firebase\JWT\JWT;
 
-class AuthController extends BaseController {
+class AuthController extends BaseController
+{
     use SecureTokenTrait;
 
-    public function generateSecureToken($id) {
+    public function generateSecureToken($id)
+    {
         // Add logic to generate a secure token based on the provided ID
-        $secureToken = hash('sha256', $id.'your_secret_key');
+        $secureToken = hash('sha256', $id . 'your_secret_key');
 
         // Store the secure token in the session or database for later validation
-        session()->set('secure_token_'.$id, $secureToken);
+        session()->set('secure_token_' . $id, $secureToken);
 
         return $secureToken;
     }
 
-    public function checkEmail() {
+    public function checkEmail()
+    {
         $email = $this->request->getPost('Email');
 
         try {
             $user = $this->users->where('Email', $email)->first();
 
-            if($user) {
+            if ($user) {
                 // Check if the user is verified
-                if($user['IsVerified'] == 1) {
+                if ($user['IsVerified'] == 1) {
                     return $this->respond(['success' => true], 200);
                 } else {
                     return $this->respond(['success' => false, 'error' => 'Email not verified'], 200);
@@ -42,16 +45,17 @@ class AuthController extends BaseController {
     }
 
     // Inside your AuthController or wherever you handle authentication
-    public function verifyAccount($verificationCode) {
+    public function verifyAccount($verificationCode)
+    {
         // Find the user by verification code
         $user = $this->users->where('VerificationCode', $verificationCode)->first();
 
-        if(!$user) {
+        if (!$user) {
             return $this->respond('Invalid verification code', 201);
         }
 
         // Check if the account is already verified
-        if($user['IsVerified'] == 1) {
+        if ($user['IsVerified'] == 1) {
             return $this->respond('Account is already verified', 201);
         }
 
@@ -67,7 +71,8 @@ class AuthController extends BaseController {
     }
 
 
-    public function login() {
+    public function login()
+    {
         $email = $this->request->getPost('Email');
         $password = $this->request->getPost('Password');
 
@@ -75,23 +80,23 @@ class AuthController extends BaseController {
             // Validate user credentials
             $user = $this->users->where('Email', $email)->first();
 
-            if(!$user) {
+            if (!$user) {
                 return $this->respond(['error' => 'User not found'], 404);
             }
 
 
 
             // Check status based on role
-            $status = $this->getUserStatusByRole((int)$user['Role_ID'], $user['User_ID']);
+            $status = $this->getUserStatusByRole((int) $user['Role_ID'], $user['User_ID']);
 
             // Check if the user is active
-            if(strtolower($status) !== 'active') {
+            if (strtolower($status) !== 'active') {
                 return $this->respond(['error' => 'Account is not active'], 403);
             }
 
 
             // Verify hashed password
-            if(!password_verify($password, $user['Password'])) {
+            if (!password_verify($password, $user['Password'])) {
                 return $this->respond(['error' => 'Invalid password'], 200);
             }
 
@@ -132,9 +137,10 @@ class AuthController extends BaseController {
     }
 
     // Function to get user status based on role
-    private function getUserStatusByRole($roleId, $userID) {
-        $roleId = (int)$roleId;
-        switch($roleId) {
+    private function getUserStatusByRole($roleId, $userID)
+    {
+        $roleId = (int) $roleId;
+        switch ($roleId) {
             case 1: // Assuming role 1 corresponds to main admin
                 // Check the admin table for status
                 $mainAdmin = $this->mainAdmin->where('User_ID', $userID)->first();
@@ -152,6 +158,10 @@ class AuthController extends BaseController {
                 // Check the admin table for status
                 $teachers = $this->teachers->where('User_ID', $userID)->first();
                 return $teachers ? $teachers['Status'] : 'inactive';
+            case 5: // Assuming role 2 corresponds to station admin
+                // Check the admin table for status
+                $students = $this->students->where('User_ID', $userID)->first();
+                return $students ? $students['Status'] : 'inactive';
             default:
                 return '1'; // Default to inactive if role is not recognized
         }
@@ -163,18 +173,20 @@ class AuthController extends BaseController {
 
 
 
-    public function getUserDetails($role, $userId) {
+    public function getUserDetails($role, $userId)
+    {
         // Define an array to map roles to their respective models
         $roleModels = [
             '3' => \App\Models\StationAdminModel::class,
             '6' => \App\Models\ApplicantsModel::class,
             '2' => \App\Models\MainAdminModel::class,
             '4' => \App\Models\TeachersModel::class,
+            '5' => \App\Models\StudentsModel::class,
             // Add more entries for other roles as needed
         ];
 
         // Check if the provided role exists in the mapping
-        if(!array_key_exists((int)$role, $roleModels)) {
+        if (!array_key_exists((int) $role, $roleModels)) {
             return $this->failNotFound('Invalid role');
         }
 
@@ -182,10 +194,10 @@ class AuthController extends BaseController {
         $model = new $roleModels[$role];
 
         // Fetch user details based on the user ID
-        $userDetails = $model->where('User_ID', (int)$userId)->first();
+        $userDetails = $model->where('User_ID', (int) $userId)->first();
 
         // You might use the result for further processing
-        if($userDetails) {
+        if ($userDetails) {
             // User details found, you can access them using $userDetails
             $fullName = $this->getFullName($userDetails);
             $additionalDetails = $this->getAdditionalDetails($role, $userDetails);
@@ -204,7 +216,8 @@ class AuthController extends BaseController {
     }
 
     // Function to get the full name from user details
-    private function getFullName($userDetails) {
+    private function getFullName($userDetails)
+    {
         $firstName = $userDetails['First_Name'];
         $middleName = $userDetails['Middle_Name'];
         $lastName = $userDetails['Last_Name'];
@@ -214,12 +227,13 @@ class AuthController extends BaseController {
     }
 
     // Function to get additional details based on the role
-    private function getAdditionalDetails($role, $userDetails) {
+    private function getAdditionalDetails($role, $userDetails)
+    {
         // Add logic specific to each role to get additional details
-        switch($role) {
+        switch ($role) {
             case 2: // Station Admin
                 $stationDetails = $this->StationAdmin->where('User_ID', $userDetails['User_ID'])->first();
-                if($stationDetails) {
+                if ($stationDetails) {
                     return ['station' => $stationDetails['Station']];
                 } else {
                     return ['station' => null]; // Return an array with a null value for station
@@ -235,7 +249,8 @@ class AuthController extends BaseController {
 
 
 
-    public function createAccount() {
+    public function createAccount()
+    {
         try {
             $this->db->transBegin(); // Start transaction
 
@@ -267,7 +282,7 @@ class AuthController extends BaseController {
                 // Add more entries for other roles as needed
             ];
 
-            if(array_key_exists($role, $roleModels)) {
+            if (array_key_exists($role, $roleModels)) {
                 $userModel = new $roleModels[$role]();
 
                 // Insert into the corresponding table

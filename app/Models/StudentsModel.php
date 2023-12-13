@@ -12,7 +12,7 @@ class StudentsModel extends Model
     protected $returnType = 'array';
     protected $useSoftDeletes = false;
     protected $protectFields = true;
-    protected $allowedFields = ['User_ID', 'First_Name', 'Middle_Name', 'Last_Name', 'Age', 'Gender', 'Address', 'Birthday', 'Birthplace', 'Status', 'Nationality', 'Religion', 'Stud_PhoneNum'];
+    protected $allowedFields = ['User_ID', 'Profile_Picture', 'First_Name', 'Middle_Name', 'Last_Name', 'Name_Extension', 'Age', 'Sex', 'Address', 'Birthday', 'Birthplace', 'Status', 'Nationality', 'Religion', 'Stud_PhoneNum'];
 
     // Dates
     protected $useTimestamps = false;

@@ -610,6 +610,94 @@ class StationAdminController extends BaseController
         return $lastDayOfMonth;
     }
 
+    public function getStudentStatisticsperStation($stationId)
+    {
+        $enrollmentModel = $this->enrollments;
+
+        // Define the date range for the last year and the current year
+        $lastYearStart = date("Y-01-01", strtotime("-1 year")); // First day of last year
+        $currentYearStart = date("Y-01-01"); // First day of current year
+        $nextYearStart = date("Y-01-01", strtotime("+1 year")); // First day of next year
+
+        // Count the total number of unique students enrolled in the specified station in the last year
+        $resultLastYear = $enrollmentModel
+            ->select('COUNT(DISTINCT Stud_ID) as studentCount')
+            ->where('Station_ID', $stationId)
+            ->where('Enrollment_Date >=', $lastYearStart)
+            ->where('Enrollment_Date <', $currentYearStart)
+            ->first();
+
+        $totalStudentsLastYear = isset($resultLastYear['studentCount']) ? $resultLastYear['studentCount'] : 0;
+
+        // Count the total number of unique students for the current year
+        $resultCurrentYear = $enrollmentModel
+            ->select('COUNT(DISTINCT Stud_ID) as studentCount')
+            ->where('Station_ID', $stationId)
+            ->where('Enrollment_Date >=', $currentYearStart)
+            ->where('Enrollment_Date <', $nextYearStart)
+            ->first();
+
+        $totalStudentsCurrentYear = isset($resultCurrentYear['studentCount']) ? $resultCurrentYear['studentCount'] : 0;
+
+        // Calculate the percentage increase
+        $percentageIncrease = 0;
+        if ($totalStudentsLastYear > 0) {
+            $percentageIncrease = (($totalStudentsCurrentYear - $totalStudentsLastYear) / $totalStudentsLastYear) * 100;
+        }
+
+        // Prepare and return the response
+        return $this->response->setJSON([
+            'totalStudents' => $totalStudentsCurrentYear,
+            'percentageIncrease' => $percentageIncrease
+        ]);
+    }
+    public function getTeacherStatisticsperStation($stationId)
+    {
+        $teachingAssignmentModel = $this->teacherAssignments;
+        ;
+
+        // Define the current year and the last year
+        $currentYear = date("Y");
+        $lastYear = date("Y", strtotime("-1 year"));
+
+        // Count the number of unique teachers at the station this year
+        $totalTeachersCurrentYear = $teachingAssignmentModel
+            ->select('Teachers.Teacher_ID')
+            ->join('Teachers', 'Teachers.Teacher_ID = TeachingAssignments.Teacher_ID', 'left')
+            ->join('Users', 'Users.User_ID = Teachers.User_ID', 'left')
+            ->where('TeachingAssignments.station_id', $stationId)
+            ->where('YEAR(Users.RegistrationDate)', $currentYear)
+            ->groupBy('Teachers.Teacher_ID')
+            ->countAllResults();
+
+        // Count the number of unique teachers at the station last year
+        $totalTeachersLastYear = $teachingAssignmentModel
+            ->select('Teachers.Teacher_ID')
+            ->join('Teachers', 'Teachers.Teacher_ID = TeachingAssignments.Teacher_ID', 'left')
+            ->join('Users', 'Users.User_ID = Teachers.User_ID', 'left')
+            ->where('TeachingAssignments.station_id', $stationId)
+            ->where('YEAR(Users.RegistrationDate)', $lastYear)
+            ->groupBy('Teachers.Teacher_ID')
+            ->countAllResults();
+
+        // Calculate the percentage increase
+        $percentageIncrease = 0;
+        if ($totalTeachersLastYear > 0) {
+            $percentageIncrease = (($totalTeachersCurrentYear - $totalTeachersLastYear) / $totalTeachersLastYear) * 100;
+        }
+
+        // Prepare and return the response
+        return $this->response->setJSON([
+            'totalTeachers' => $totalTeachersCurrentYear,
+            'percentageIncrease' => $percentageIncrease
+        ]);
+    }
+
+
+
+
+
+
 
 
 
