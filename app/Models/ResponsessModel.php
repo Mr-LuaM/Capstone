@@ -12,7 +12,7 @@ class ResponsessModel extends Model
     protected $returnType = 'array';
     protected $useSoftDeletes = false;
     protected $protectFields = true;
-    protected $allowedFields = ['Assignment_ID', 'Question_ID', 'Selected_Answer'];
+    protected $allowedFields = ['Assignment_ID', 'Question_ID', 'Selected_Answer', 'Stud_ID'];
 
     // Dates
     protected $useTimestamps = false;

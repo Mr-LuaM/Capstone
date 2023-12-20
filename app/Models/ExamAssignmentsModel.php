@@ -12,7 +12,7 @@ class ExamAssignmentsModel extends Model
     protected $returnType = 'array';
     protected $useSoftDeletes = false;
     protected $protectFields = true;
-    protected $allowedFields = ['Stud_ID', 'Exam_ID', 'Assignment_Status'];
+    protected $allowedFields = ['Stud_ID', 'Exam_ID', 'Assignment_Status', 'Completion_Time', 'Score'];
 
     // Dates
     protected $useTimestamps = false;

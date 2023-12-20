@@ -12,7 +12,7 @@ class ExamModel extends Model
     protected $returnType = 'array';
     protected $useSoftDeletes = false;
     protected $protectFields = true;
-    protected $allowedFields = ['Teacher_ID', 'Exam_Title', 'Duration_Minutes'];
+    protected $allowedFields = ['Teacher_ID', 'Exam_Title', 'Duration_Minutes', 'Start_Time', 'End_Time'];
 
     // Dates
     protected $useTimestamps = false;

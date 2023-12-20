@@ -173,60 +173,56 @@ class TeacherController extends BaseController
 
     public function importGrades()
     {
-
         // Retrieve the uploaded file from the request
         $file = $this->request->getFile('grades_file');
 
-
-
         // Check if a file was uploaded
-        if ($file) {
+        if (!$file || $file->getError()) {
+            // Respond with an error if no file was selected or if there's an error
+            return $this->respond(['success' => false, 'message' => 'No file selected or file error']);
+        }
 
-            // Load the spreadsheet from the uploaded file
-            $spreadsheet = IOFactory::load($file->getTempName());
+        // Load the spreadsheet from the uploaded file
+        $spreadsheet = IOFactory::load($file->getTempName());
 
-            // Get the sheet by name (replace "Grades" with the actual sheet name)
-            $sheet = $spreadsheet->getSheetByName("Grades");
-            return $this->respond($sheet);
+        // Get the sheet by name (replace "Grades" with the actual sheet name)
+        $sheet = $spreadsheet->getSheetByName("Grades");
 
-            foreach ($sheet->getRowIterator() as $row) {
-                $rowData = [];
-                foreach ($row->getCellIterator() as $cell) {
-                    $rowData[] = $cell->getValue();
-                }
-
-                // Assuming the columns are in a specific order
-                $enrollmentID = $rowData[0] ?? null; // Assuming Enrollment_ID is in the first column
-                $grade = $rowData[20] ?? null; // Assuming Grade is in the 21st column (adjust the index accordingly)
-
-                // Check if both enrollmentID and grade are present
-                if ($enrollmentID !== null && $grade !== null) {
-                    // Insert or update the grade in the database
-                    // Perform necessary validation and error handling
-
-                    // Example: Update existing grade if it exists, otherwise insert a new grade
-                    $existingGrade = $this->db->table('grades')->where('Enrollment_ID', $enrollmentID)->get()->getRow();
-
-                    if ($existingGrade) {
-                        // Update the existing grade
-                        $this->db->table('grades')
-                            ->where('Enrollment_ID', $enrollmentID)
-                            ->update(['Grade' => $grade]);
-                    } else {
-                        // Insert a new grade
-                        $this->db->table('grades')
-                            ->insert(['Enrollment_ID' => $enrollmentID, 'Grade' => $grade]);
-                    }
-                }
+        foreach ($sheet->getRowIterator() as $row) {
+            $rowData = [];
+            foreach ($row->getCellIterator() as $cell) {
+                $rowData[] = $cell->getValue();
             }
 
-            // Respond with success or any additional logic as needed
-            return $this->respond(['success' => true]);
-        } else {
-            // Respond with an error if no file was selected
-            return $this->respond(['success' => false, 'message' => 'No file selected']);
+            // Assuming the columns are in a specific order
+            $enrollmentID = $rowData[0] ?? null; // Assuming Enrollment_ID is in the first column
+            $grade = $rowData[21] ?? null; // Assuming Grade is in the 21st column (adjust the index accordingly)
+
+            // Check if both enrollmentID and grade are present
+            if ($enrollmentID !== null && $grade !== null) {
+                // Insert or update the grade in the database
+                // Perform necessary validation and error handling
+
+                // Example: Update existing grade if it exists, otherwise insert a new grade
+                $existingGrade = $this->db->table('grades')->where('Enrollment_ID', $enrollmentID)->get()->getRow();
+
+                if ($existingGrade) {
+                    // Update the existing grade
+                    $this->db->table('grades')
+                        ->where('Enrollment_ID', $enrollmentID)
+                        ->update(['Grade' => $grade]);
+                } else {
+                    // Insert a new grade
+                    $this->db->table('grades')
+                        ->insert(['Enrollment_ID' => $enrollmentID, 'Grade' => $grade]);
+                }
+            }
         }
+
+        // Respond with success after processing all rows
+        return $this->respond(['success' => true]);
     }
+
     public function saveGrade()
     {
         $Stud_ID = $this->request->getPost('Stud_ID');
@@ -318,6 +314,196 @@ class TeacherController extends BaseController
             return $this->failServerError('An unexpected error occurred.');
         }
     }
+
+
+    public function addExam()
+    {
+        helper(['form', 'url']);
+
+        $examModel = $this->examModel;
+        $questionModel = $this->questionsModel;
+        $choicesModel = $this->choices;
+
+        // Retrieve each part of the form data
+        $examTitle = $this->request->getPost('examTitle');
+        $questions = json_decode($this->request->getPost('questions'), true);
+        $duration = $this->request->getPost('duration');
+        $startDate = $this->request->getPost('startDate');
+        $endDate = $this->request->getPost('endDate');
+        $userID = $this->request->getPost('teacherId');
+        $examId = $this->request->getPost('examId');
+        $isUpdate = !empty($examId);
+
+        $teacherId = $this->teachers->where('User_ID', (int) $userID)->first();
+
+        // Insert exam data
+        $examData = [
+            'Teacher_ID' => $teacherId['Teacher_ID'],
+            'Exam_Title' => $examTitle,
+            'Duration_Minutes' => $duration,
+            'Start_Time' => $startDate,
+            'End_Time' => $endDate
+        ];
+        if ($isUpdate) {
+            // Update the exam data
+            $examModel->update($examId, $examData);
+
+            // Fetch existing question IDs for this exam
+            $existingQuestionIds = $questionModel->where('Exam_ID', $examId)->findColumn('Question_ID') ?? [];
+
+            // IDs of questions that have been processed (either updated or newly created)
+            $processedQuestionIds = [];
+
+            foreach ($questions as $question) {
+                $questionData = [
+                    'Exam_ID' => $examId,
+                    'Question_Text' => $question['text'],
+                    'Correct_Answer' => $question['correctAnswer']
+                ];
+
+                $questionId = $question['Question_ID'] ?? null;
+                if (!empty($questionId)) {
+                    // Update existing question
+                    $questionModel->update($questionId, $questionData);
+                    $processedQuestionIds[] = $questionId;
+                } else {
+                    // Insert new question
+                    if ($questionModel->insert($questionData) === false) {
+                        return $this->failValidationErrors($questionModel->errors());
+                    }
+                    $newQuestionId = $questionModel->getInsertID();
+                    $processedQuestionIds[] = $newQuestionId;
+                    $questionId = $newQuestionId;
+                }
+
+                // Update choices
+                // Delete existing choices for the question and insert new ones
+                $choicesModel->where('Question_ID', $questionId)->delete();
+                foreach ($question['options'] as $optionText) {
+                    $choiceData = ['Question_ID' => $questionId, 'Choice_Text' => $optionText];
+                    $choicesModel->insert($choiceData);
+                }
+            }
+
+            // Determine which questions to delete (existing in DB but not in the processed list)
+            $questionsToDelete = array_diff($existingQuestionIds, $processedQuestionIds);
+
+            // Delete unprocessed questions and their choices
+            foreach ($questionsToDelete as $questionId) {
+                $choicesModel->where('Question_ID', $questionId)->delete();
+                $questionModel->delete($questionId);
+            }
+
+            return $this->response->setJSON(['success' => true, 'message' => 'Exam updated successfully']);
+        } else {
+
+            if ($examModel->insert($examData) === false) {
+                return $this->failValidationErrors($examModel->errors());
+            }
+
+            $examId = $examModel->getInsertID();
+
+            // Process each question
+            foreach ($questions as $question) {
+                $questionData = [
+                    'Exam_ID' => $examId,
+                    'Question_Text' => $question['text'],
+                    'Correct_Answer' => $question['correctAnswer']
+                ];
+
+                if ($questionModel->insert($questionData) === false) {
+                    return $this->failValidationErrors($questionModel->errors());
+                }
+
+                $questionId = $questionModel->getInsertID();
+
+                // Process each option for the question
+                foreach ($question['options'] as $option) {
+                    $choiceData = [
+                        'Question_ID' => $questionId,
+                        'Choice_Text' => $option
+                    ];
+                    $choicesModel->insert($choiceData);
+                }
+            }
+
+            return $this->response->setJSON(['success' => true, 'message' => 'Exam added successfully']);
+
+        }
+
+
+    }
+    public function getExams()
+    {
+        $userId = $this->request->getVar('userId');
+
+
+        $teacher = $this->teachers->where('User_ID', (int) $userId)->first();
+
+        if (!$teacher) {
+            return $this->failNotFound('Teacher not found.');
+        }
+
+        $teacherId = $teacher['Teacher_ID'];
+
+        // Fetch exams for this teacher
+        $exams = $this->examModel->where('Teacher_ID', $teacherId)->findAll();
+
+        return $this->respond($exams);
+    }
+
+    public function getExam($id = null)
+    {
+        if (!$id) {
+            return $this->failNotFound('Exam ID not provided');
+        }
+
+        $exam = $this->examModel->find((int) $id);
+        if (!$exam) {
+            return $this->failNotFound('Exam not found with ID: ' . $id);
+        }
+
+        // Fetch related questions
+        $exam['questions'] = $this->questionsModel->where('Exam_ID', (int) $id)->findAll();
+
+        foreach ($exam['questions'] as $key => $question) {
+            // Fetch choices for each question
+            $choices = $this->choices->where('Question_ID', (int) $question['Question_ID'])->findAll();
+
+            $exam['questions'][$key]['options'] = array_column($choices, 'Choice_Text');
+        }
+
+        return $this->respond($exam);
+    }
+    public function getResponse($examId)
+    {
+        helper(['form', 'url']);
+
+        if (!$examId) {
+            return $this->failNotFound('Exam ID not provided');
+        }
+
+
+        // Ensure $examId is a valid number
+        if (!is_numeric($examId)) {
+            return $this->failValidationErrors('Invalid exam ID');
+        }
+
+        $builder = $this->db->table('examassignments');
+        $builder->join('students', 'students.Stud_ID = examassignments.Stud_ID');
+        $builder->where('examassignments.Exam_ID', (int) $examId);
+        $builder->select('examassignments.*, students.*, students.first_name as studentFirstName, students.last_name as studentLastName');
+
+        $query = $builder->get();
+
+        if (!$query) {
+            return $this->failNotFound('No responses found for this exam.');
+        }
+
+        return $this->respond($query->getResultArray());
+    }
+
+
 
 
 

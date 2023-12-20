@@ -70,6 +70,9 @@ abstract class BaseController extends ResourceController
     protected $responsesModel;
     protected $grades;
     protected $dailyschedule;
+
+    protected $StationAnnouncements;
+    protected $choices;
     /**
      * @return void
      */
@@ -98,10 +101,12 @@ abstract class BaseController extends ResourceController
         $this->teacherAssignments = new \App\Models\TeacherAssignments();
         $this->grades = new \App\Models\GradeModel();
         $this->examAssignments = new \App\Models\ExamAssignmentsModel();
-        $this->examModel = new \App\Models\GradeModel();
+        $this->examModel = new \App\Models\ExamModel();
+        $this->choices = new \App\Models\ChoicesModel;
         $this->questionsModel = new \App\Models\QuestionsModel();
         $this->responsesModel = new \App\Models\ResponsessModel();
         $this->dailyschedule = new \App\Models\DailyScheduleModel();
+        $this->StationAnnouncements = new \App\Models\StationAnnouncementModel;
 
 
     }

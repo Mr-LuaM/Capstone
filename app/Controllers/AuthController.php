@@ -309,4 +309,23 @@ class AuthController extends BaseController
         }
     }
 
+    public function saveToken()
+    {
+        $userId = $this->request->getVar('user_id'); // Get the user ID from the request
+        $fcmToken = $this->request->getVar('fcm_token');
+
+        if ($userId && $fcmToken) {
+            $userModel = new \App\Models\UserModel();
+
+            // Use where clause to specify the user and then update
+            $userModel->where('User_ID', (int) $userId)->set(['fcm_token' => $fcmToken])->update();
+
+            return $this->respond(['message' => 'FCM token updated successfully']);
+        }
+
+        return $this->fail('User ID or FCM token is missing');
+    }
+
+
+
 }

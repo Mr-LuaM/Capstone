@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Traits\SecureTokenTrait;
+use DateTime;
 
 class MainAdminController extends BaseController
 {
@@ -71,7 +72,7 @@ class MainAdminController extends BaseController
 
             if ($existingUser) {
                 // Check if the user is not already a student
-                $existingStudent = $this->students->where('User_ID', $existingUser['User_ID'])->first();
+                $existingStudent = $this->students->where('User_ID', (int) $existingUser['User_ID'])->first();
 
                 if (!$existingStudent) {
                     // Define user role
@@ -84,12 +85,12 @@ class MainAdminController extends BaseController
 
                     $userId = $existingUser['User_ID'];
 
-                    // $studID = $this->students->where('User_ID', $userId)->first();
+                    //$studID = $this->students->where('User_ID', $userId)->first();
                     // return $this->respond($studID, 200);
                     // Insert student data
                     $studentFields = [
                         'User_ID' => $userId,
-                        'Profile' => $data['Profile'],
+                        'Profile_Picture' => $data['Profile_Picture'],
                         'First_Name' => $data['First_Name'],
                         'Middle_Name' => $data['Middle_Name'],
                         'Last_Name' => $data['Last_Name'],
@@ -104,47 +105,50 @@ class MainAdminController extends BaseController
                         // Add other fields as needed
                     ];
 
+
                     $this->students->insert($studentFields);
-                    $studID = $this->students->where("User_ID", $userId)->first();
-                    // Update applicant status to 'approved'
-                    $applicantId = $data['id']; // Adjust this based on your data structure
+                    $studID = $this->students->where("User_ID", (int) $userId)->first();
+
+                    $applicantId = $data['id'];
                     $this->applicants->update($applicantId, ['Status' => 'approved']);
 
 
                     $course = $this->courses->where('Course_Name', $data['approvedCourse'])->first();
                     $courseID = $course['Course_ID'];
 
-                    // Get the Station_ID based on the station name
+
                     $station = $this->stations->where('Station_Name', $data['approvedStation'])->first();
                     $stationID = $station['Station_ID'];
-                    // Assuming you have a foreign key relationship in the database
-                    // Assign the student to a specific course and station
+
                     $enrollmentFields = [
-                        'Stud_ID' => $studID['Stud_ID'], // using the applicant ID as Stud_ID
-                        'Course_ID' => intval($courseID),
-                        'Station_ID' => intval($stationID),
-                        // ... (other enrollment fields)
+                        'Stud_ID' => (int) $studID['Stud_ID'],
+                        'Course_ID' => (int) $courseID,
+                        'Station_ID' => (int) $stationID,
                     ];
 
+                    // return $this->respond($enrollmentFields, 200);
+                    $r = $this->enrollments->insert($enrollmentFields);
 
-                    $this->enrollments->insert($enrollmentFields);
+                    if (!$this->sendApprovalEmail($existingUser['Email'], $data['approvedCourse'], $data['approvedStation'])) {
+                        return $this->fail('Failed to send approval email.', 500);
+                    }
 
                 } else {
-                    // Return an error response or handle it appropriately
-                    return $this->fail('User is already a student.', 400);
+
+                    return $this->fail('User is already a student.');
                 }
             } else {
-                // Return an error response or handle it appropriately
-                return $this->fail('User does not exist.', 400);
+
+                return $this->fail('User does not exist.');
             }
 
-            $this->db->transComplete(); // Complete the transaction
+            $this->db->transComplete();
             return $this->respond(true, 200);
         } catch (\Exception $e) {
-            $this->db->transRollback(); // Rollback the transaction on error
+            $this->db->transRollback();
             log_message('error', $e->getMessage());
-            // Handle the error gracefully, perhaps show a user-friendly message
-            return $this->fail('An error occurred while processing the request.', 500);
+
+            return $this->fail('An error occurred while processing the request.');
         }
     }
 
@@ -180,10 +184,17 @@ class MainAdminController extends BaseController
                 return $this->fail('Applicant status must be "Pending" to reject.', 400);
             }
 
+
+
             // Perform the rejection logic here
 
             // Optionally, update the applicant status
             $this->applicants->update($id, ['Status' => 'rejected']);
+
+            if (!$this->sendRejectionEmail($applicant['Email'])) {
+                // Handle the case where email sending fails
+                return $this->fail('Failed to send rejection email.', 500);
+            }
 
             return $this->respond('Applicant rejected successfully.', 200);
         } catch (\Exception $e) {
@@ -191,6 +202,7 @@ class MainAdminController extends BaseController
             return $this->fail('An error occurred.', 500);
         }
     }
+
 
     public function editStation()
     {
@@ -622,7 +634,7 @@ class MainAdminController extends BaseController
             $teacherId = $this->request->getPost('Station_Admin_ID'); // Change to Teacher_ID
 
             // Get the teacher by Teacher_ID
-            $teacher = $this->teacherAssignments->where('Teacher_ID', $teacherId)->first();
+            $teacher = $this->teacherAssignments->where('Teacher_ID', (int) $teacherId)->first();
 
             if (!$teacher) {
                 return $this->respond(['error' => 'Teacher not found'], 404);
@@ -630,12 +642,13 @@ class MainAdminController extends BaseController
 
             // Update the station for the teacher
             $teacherData = [
-                'station_id' => $stationId, // Change to station_id
-                'course_id' => '',
+                'station_id' => $stationId, // Ensure that 'station_id' is the correct column name in your table
             ];
 
-
-            $this->teacherAssignments->set($teacherData)->where('Teacher_ID', $teacherId)->update();
+            // Perform the update
+            $this->teacherAssignments->set($teacherData)
+                ->where('Teacher_ID', (int) $teacherId)
+                ->update();
 
             return $this->respond(['success' => true, 'message' => 'Station updated successfully']);
         } catch (\Exception $e) {
@@ -756,80 +769,181 @@ class MainAdminController extends BaseController
     // Assuming this is your controller method to update an announcement
     public function updateAnnouncement()
     {
-        // Retrieve data from the form
+        helper(['form', 'url']);
+
+        $announcementId = $this->request->getPost('id');
         $title = $this->request->getPost('title');
-        $id = $this->request->getPost('id');
         $content = $this->request->getPost('content');
+        $pictureUrl = $this->request->getFile('picture_url');
 
-        // Retrieve the image file if provided
-        $image = $this->request->getFile('picture_url');
-
-        // Check if the image is provided and is valid
-        if ($image !== null && $image->isValid() && !$image->hasMoved()) {
-            // Move the uploaded image to a designated folder
-            $newName = $image->getRandomName();
-            $image->move(ROOTPATH . 'public/uploads', $newName);
+        if ($pictureUrl && $pictureUrl->isValid() && !$pictureUrl->hasMoved()) {
+            $newName = $pictureUrl->getRandomName();
+            $pictureUrl->move(ROOTPATH . 'public/uploads', $newName);
             $pictureUrl = 'uploads/' . $newName;
-
-            // Update the announcement with the new image
-            $this->annoucements->update($id, [
-                'title' => $title,
-                'content' => $content,
-                'picture_url' => $pictureUrl,
-                'updated_at' => date('Y-m-d H:i:s'), // Set 'updated_at' to the current timestamp
-            ]);
         } else {
-            // No new image provided, update without changing the picture_url
-            $this->annoucements->update($id, [
-                'title' => $title,
-                'content' => $content,
-                'updated_at' => date('Y-m-d H:i:s'), // Set 'updated_at' to the current timestamp
-            ]);
+            $pictureUrl = null; // Handle case where no new image is uploaded
         }
+        $datetime = new DateTime();
+        $updated_at = $datetime->format('Y-m-d H:i:s');
+        $announcementData = [
+            'title' => $title,
+            'content' => $content,
+            'picture_url' => $pictureUrl,
+            'updated_at' => $updated_at,
+        ];
 
-        // Respond with a success message
+        $announcementModel = new \App\Models\AnnouncementModel();
+        $announcementModel->update($announcementId, $announcementData);
+
+        $stationIds = $this->request->getVar('Station_ID') ?? [];
+        $this->updateStationRelations($announcementId, $stationIds);
+
         return $this->respond(['success' => true, 'message' => 'Announcement updated successfully']);
     }
-    public function addAnnouncement()
+
+    private function updateStationRelations($announcementId, $stationIds)
     {
-        // Retrieve data from the form
-        $title = $this->request->getPost('title');
-        $content = $this->request->getPost('content');
+        $stationModel = new \App\Models\StationAnnouncementModel();
 
-        // Retrieve the image file if provided
-        $image = $this->request->getFile('picture_url');
-        $userID = $this->request->getPost('user_ID');
+        $stationModel->where('announcement_id', $announcementId)->delete();
+        foreach ($stationIds as $stationId) {
+            $stationModel->insert([
+                'announcement_id' => $announcementId,
+                'station_id' => $stationId
 
-        // Check if the image is provided and is valid
-        if ($image !== null && $image->isValid() && !$image->hasMoved()) {
-            // Move the uploaded image to a designated folder
-            $newName = $image->getRandomName();
-            $image->move(ROOTPATH . 'public/uploads', $newName);
-            $pictureUrl = 'uploads/' . $newName;
-
-            // Add a new announcement with the image
-            $this->annoucements->insert([
-                'announcer_user_id' => $userID,
-                'title' => $title,
-                'content' => $content,
-                'picture_url' => $pictureUrl,
-                'created_at' => date('Y-m-d H:i:s'), // Set 'created_at' to the current timestamp
-                'updated_at' => date('Y-m-d H:i:s'), // Set 'updated_at' to the current timestamp
-            ]);
-        } else {
-            // No image provided, add a new announcement without 'picture_url'
-            $this->annoucements->insert([
-                'announcer_user_id' => $userID,
-                'title' => $title,
-                'content' => $content,
-                'created_at' => date('Y-m-d H:i:s'), // Set 'created_at' to the current timestamp
-                'updated_at' => date('Y-m-d H:i:s'), // Set 'updated_at' to the current timestamp
             ]);
         }
-
-        // Respond with a success message
-        return $this->respond(['success' => true, 'message' => 'Announcement added successfully']);
     }
+
+
+    public function addAnnouncement()
+    {
+        helper(['form', 'url']);
+
+        $title = $this->request->getPost('title');
+        $content = $this->request->getPost('content');
+        $userID = $this->request->getPost('user_ID');
+        $stationIDs = $this->request->getPost('Station_ID'); // Ensure this is an array
+
+        $pictureUrl = $this->request->getFile('picture_url');
+
+        // Process the image file if provided and valid
+        if ($pictureUrl && !$pictureUrl->hasMoved()) {
+            $newName = $pictureUrl->getRandomName();
+            $pictureUrl->move(ROOTPATH . 'public/uploads', $newName);
+            $pictureUrl = 'uploads/' . $newName;
+        }
+
+        $announcementData = [
+            'announcer_user_id' => $userID,
+            'title' => $title,
+            'content' => $content,
+            'picture_url' => $pictureUrl ?? null,
+            // 'created_at' and 'updated_at' will be automatically handled if you set $useTimestamps in your model
+        ];
+
+        $announcementModel = new \App\Models\AnnouncementModel();
+        $announcementID = $announcementModel->insert($announcementData);
+
+        $tokens = $this->getFCMTokens();
+        if (!empty($tokens)) {
+            $this->sendPushNotification($tokens, $title, $content, $pictureUrl);
+        }
+
+        // If $stationIDs is not an array or is empty, treat the announcement as a general announcement
+        if (is_array($stationIDs) && !empty($stationIDs)) {
+            $stationAnnouncementModel = new \App\Models\StationAnnouncementModel(); // Assuming you have a model for the junction table
+
+            foreach ($stationIDs as $stationID) {
+                $stationAnnouncementModel->insert([
+                    'announcement_id' => $announcementID,
+                    'station_id' => $stationID
+                ]);
+            }
+        }
+
+        return $this->respondCreated(['success' => true, 'message' => 'Announcement added successfully']);
+    }
+    protected $firebaseServerKey = 'AAAAGdrwYnc:APA91bGXw5cv3F3unpb56ySKuWglwbUrCNnYbsyZ7RxDCHLTHSIapFcRmcNoOpWIYIBY928el1PEN39VOyK_kqu1T13Pq78GqvrTg8T8EDmAxFY2Iv0S_B9E9Jf-TDL2RTaSZyXlx-IX';
+    private function sendFirebaseNotification($title, $message)
+    {
+        $url = 'https://fcm.googleapis.com/fcm/send';
+
+        // Retrieve FCM tokens from your database
+        $tokens = $this->getFCMTokens(); // Implement this method to get tokens
+
+        $fields = [
+            'registration_ids' => $tokens,
+            'notification' => [
+                'title' => $title,
+                'body' => $message,
+                // Optionally add other notification properties here
+            ],
+            // Optionally add 'data' payload for additional data with the notification
+        ];
+
+        $headers = [
+            'Authorization: key=' . $this->firebaseServerKey, // Your server key
+            'Content-Type: application/json'
+        ];
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($fields));
+        $response = curl_exec($ch);
+        curl_close($ch);
+
+        // Optionally handle the response from FCM
+    }
+
+    private function getFCMTokens()
+    {
+        $userModel = new \App\Models\UserModel(); // Replace with your user model
+        $users = $userModel->findAll();
+        $tokens = [];
+
+        foreach ($users as $user) {
+            if (!empty($user['fcm_token'])) {
+                $tokens[] = $user['fcm_token'];
+            }
+        }
+
+        return $tokens;
+    }
+    public function sendPushNotification($tokens, $title, $body, $imageUrl)
+    {
+        $url = 'https://fcm.googleapis.com/fcm/send';
+        $headers = [
+            'Authorization: key=' . $this->firebaseServerKey,
+            'Content-Type: application/json'
+        ];
+
+        $fields = [
+            'registration_ids' => $tokens,
+            'notification' => [
+                'title' => $title,
+                'body' => $body,
+                'image' => "http://backend.test/" . $imageUrl,
+                'click_action' => 'action_url' // Optional: action URL on click
+            ]
+        ];
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($fields));
+        $result = curl_exec($ch);
+        curl_close($ch);
+
+        return json_decode($result, true);
+    }
+
+
 
     public function removeAnnouncement($id)
     {
@@ -839,8 +953,22 @@ class MainAdminController extends BaseController
             $isValidToken = $this->validateSecureToken($id, $secureToken);
 
             if ($isValidToken) {
-                // Perform the actual removal of the announcement (use your model)
+                // Begin a transaction
+                $this->db->transStart();
+
+                // Remove corresponding entries from station_announcements
+                $stationAnnouncementModel = new \App\Models\StationAnnouncementModel();
+                $stationAnnouncementModel->where('announcement_id', $id)->delete();
+
+                // Remove the announcement
                 $this->annoucements->delete($id);
+
+                // Commit the transaction
+                $this->db->transComplete();
+
+                if ($this->db->transStatus() === FALSE) {
+                    throw new \Exception('Transaction failed');
+                }
 
                 // Respond with a success message
                 return $this->respond(['success' => true, 'message' => 'Announcement removed successfully']);
@@ -853,6 +981,7 @@ class MainAdminController extends BaseController
             return $this->respond(['success' => false, 'message' => 'Error removing announcement: ' . $e->getMessage()], 500);
         }
     }
+
 
     public function getTeacherAssignmentsDetails()
     {

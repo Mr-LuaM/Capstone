@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Traits\SecureTokenTrait;
 use App\Controllers\BaseController;
+use App\Models\StudentsModel;
 
 class DashboardController extends BaseController
 {
@@ -189,6 +190,24 @@ class DashboardController extends BaseController
         }
 
         return $this->response->setJSON($chartData);
+    }
+
+    public function getStudentDemographics()
+    {
+        $studentModel = new StudentsModel(); // Replace with your student model
+
+        // Fetch the demographics data from your database
+        $maleCount = $studentModel->where('Sex', 'Male')->countAllResults();
+        $femaleCount = $studentModel->where('Sex', 'Female')->countAllResults();
+
+        // Prepare the data as an associative array
+        $demographicsData = [
+            'Male' => $maleCount,
+            'Female' => $femaleCount,
+            // Add more demographics categories as needed
+        ];
+
+        return $this->response->setJSON($demographicsData);
     }
 
 

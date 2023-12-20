@@ -401,7 +401,7 @@ class StationAdminController extends BaseController
                     e.Enrollment_Status,
                     s.Stud_ID,
                     s.User_ID as Student_User_ID,
-                    s.Profile as Student_Profile,
+                    s.Profile_Picture as Student_Profile,
                     s.First_Name as Student_First_Name,
                     s.Middle_Name as Student_Middle_Name,
                     s.Last_Name as Student_Last_Name,

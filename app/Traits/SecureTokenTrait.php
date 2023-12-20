@@ -6,21 +6,24 @@ namespace App\Traits;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-trait SecureTokenTrait {
-    protected function validateSecureToken($id, $secureToken) {
+trait SecureTokenTrait
+{
+    protected function validateSecureToken($id, $secureToken)
+    {
         // Retrieve the stored secure token
-        $storedSecureToken = session()->get('secure_token_'.$id);
+        $storedSecureToken = session()->get('secure_token_' . $id);
 
         // Validate the provided secure token against the stored one
-        if($secureToken === $storedSecureToken) {
+        if ($secureToken === $storedSecureToken) {
             // Clear the secure token after successful validation
-            session()->remove('secure_token_'.$id);
+            session()->remove('secure_token_' . $id);
             return true;
         }
 
         return false;
     }
-    protected function sendVerificationEmail($email, $verificationCode) {
+    protected function sendVerificationEmail($email, $verificationCode)
+    {
         $mail = new PHPMailer(true);
 
         try {
@@ -40,7 +43,70 @@ trait SecureTokenTrait {
             // Email content
             $mail->isHTML(true);
             $mail->Subject = 'Account Verification';
-            $mail->Body = "Click the following link to verify your account: ".base_url("auth/verify/$verificationCode");
+            $mail->Body = "Click the following link to verify your account: " . base_url("auth/verify/$verificationCode");
+
+            $mail->send();
+            return true;
+        } catch (Exception $e) {
+            // Log or handle the error as needed
+            return false;
+        }
+    }
+
+    public function sendRejectionEmail($email)
+    {
+        $mail = new PHPMailer(true);
+
+        try {
+            // Server settings
+            $mail->isSMTP();
+            $mail->Host = 'smtp.gmail.com';
+            $mail->SMTPAuth = true;
+            $mail->Username = 'alluasan599@gmail.com';
+            $mail->Password = 'oxht neem udqo pvgn';
+            $mail->SMTPSecure = 'tls';
+            $mail->Port = 587;
+
+            // Sender information
+            $mail->setFrom('alluasan599@gmail.com', 'Mark Lua');
+            $mail->addAddress($email);
+
+            // Email content
+            $mail->isHTML(true);
+            $mail->Subject = 'Application Rejection';
+            $mail->Body = "We regret to inform you that your application has been rejected.";
+
+            $mail->send();
+            return true;
+        } catch (Exception $e) {
+            // Log or handle the error as needed
+            return false;
+        }
+    }
+
+    public function sendApprovalEmail($email, $course, $station)
+    {
+        $mail = new PHPMailer(true);
+
+        try {
+            $mail->isSMTP();
+            $mail->Host = 'smtp.gmail.com';
+            $mail->SMTPAuth = true;
+            $mail->Username = 'alluasan599@gmail.com';
+            $mail->Password = 'oxht neem udqo pvgn';
+            $mail->SMTPSecure = 'tls';
+            $mail->Port = 587;
+
+            // Sender information
+            $mail->setFrom('alluasan599@gmail.com', 'Mark Lua');
+            $mail->addAddress($email);
+
+            // Email content
+            $mail->isHTML(true);
+            $mail->Subject = 'Application Approval';
+            $mail->Body = "Congratulations! Your application has been approved.<br>"
+                . "Approved Course: " . htmlspecialchars($course) . "<br>"
+                . "Approved Station: " . htmlspecialchars($station);
 
             $mail->send();
             return true;
@@ -50,7 +116,8 @@ trait SecureTokenTrait {
         }
     }
     // Function to check if the email is unique
-    public function isEmailUnique($email) {
+    public function isEmailUnique($email)
+    {
         $countApplicants = $this->applicants->where('email', $email)->countAllResults();
         $countUsers = $this->users->where('email', $email)->countAllResults();
         return $countApplicants === 0 && $countUsers === 0;

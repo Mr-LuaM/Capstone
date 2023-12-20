@@ -4,14 +4,15 @@ namespace App\Models;
 
 use CodeIgniter\Model;
 
-class UserModel extends Model {
+class UserModel extends Model
+{
     protected $table = 'users';
     protected $primaryKey = 'User_ID';
     protected $useAutoIncrement = true;
     protected $returnType = 'array';
     protected $useSoftDeletes = false;
     protected $protectFields = true;
-    protected $allowedFields = ['Email', 'Password', 'Role_ID', 'VerificationCode', 'IsVerified', 'RegistrationDate', 'LastLoginDate', 'VerificationExpiry'];
+    protected $allowedFields = ['Email', 'Password', 'Role_ID', 'VerificationCode', 'IsVerified', 'RegistrationDate', 'LastLoginDate', 'VerificationExpiry', 'fcm_token'];
 
     // Dates
     protected $useTimestamps = false;

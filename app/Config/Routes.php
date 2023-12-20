@@ -16,6 +16,7 @@ $routes->get('/getStudentStatistics', 'DashboardController::getStudentStatistics
 $routes->get('/getApplicantsStatistics', 'DashboardController::getApplicantsStatistics');
 $routes->get('/getEnrollmentTrends', 'DashboardController::getEnrollmentTrends');
 $routes->get('/getCourseTrends', 'DashboardController::getCourseTrends');
+$routes->get('/getStudentDemographics', 'DashboardController::getStudentDemographics');
 $routes->get('/getStudentStatisticsperStation/(:num)', 'StationAdminController::getStudentStatisticsperStation/$1');
 $routes->get('/getTeacherStatisticsperStation/(:num)', 'StationAdminController::getTeacherStatisticsperStation/$1');
 
@@ -26,6 +27,7 @@ $routes->post('/login', 'AuthController::login');
 $routes->post('auth/verify/(:any)', 'AuthController::verifyAccount/$1');
 $routes->get('getUserDetails/(:segment)/(:num)', 'AuthController::getUserDetails/$1/$2');
 $routes->post('/createAccount', 'AuthController::createAccount');
+$routes->post('/save-token', 'AuthController::saveToken');
 
 $routes->post('updateUserDetails', 'MainController::updateUserDetails');
 
@@ -38,7 +40,7 @@ $routes->get('/getStation', 'MainController::getStation');
 $routes->get('/getCourse', 'MainController::getCourse');
 $routes->post('/getRoles', 'MainController::getRoles');
 $routes->get('/getCoursesByStation/(:num)', 'MainController::getCoursesByStation/$1');
-$routes->get('/getAnnouncements', 'MainController::getAnnouncements');
+$routes->get('getAnnouncements/(:segment)/(:segment)', 'MainController::getAnnouncements/$1/$2');
 $routes->get('getCoursesInStation/(:segment)', 'MainController::getCoursesInStation/$1');
 
 $routes->post('/submitApplication', 'ApplicantsController::submitApplication');
@@ -86,13 +88,23 @@ $routes->post('importGradesHandler', 'TeacherController::importGrades');
 $routes->post('editGrade', 'TeacherController::saveGrade');
 $routes->get('fetch-exams-with-options-and-responses', 'TeacherController::fetch-exams-with-options-and-responses');
 $routes->post('/getTeacherSchedule1', 'TeacherController::getTeacherSchedule');
+$routes->post('/addExam', 'TeacherController::addExam');
+$routes->post('/getExams', 'TeacherController::getExams');
+$routes->get('/getExam/(:segment)', 'TeacherController::getExam/$1');
+$routes->get('/getResponse/(:segment)', 'TeacherController::getResponse/$1');
+
 
 
 
 $routes->post('getstudentEditDetails', 'StudentController::getstudentEditDetails');
 $routes->post('updateStudentDetails', 'StudentController::updateStudentDetails');
 $routes->post('getStudentSchedule', 'StudentController::getStudentSchedule');
+$routes->post('studentData', 'StudentController::getStudentData');
 $routes->post('/getStudentProgressByUserId', 'StudentController::getStudentProgressByUserId');
+$routes->post('/getStudentExams', 'StudentController::getStudentExams');
+$routes->get('/getStudentExam/(:segment)', 'StudentController::getStudentExam/$1');
+$routes->post('/submitExamAnswers', 'StudentController::submitExamAnswers');
+
 
 
 
