@@ -1,4 +1,6 @@
 import axios from "axios";
+import store from '@/store'; // Adjust the path as per your project structure
+
 
 export async function getCourses(status = "all") {
   try {
@@ -86,13 +88,18 @@ export async function getRoles(userRole) {
 
 export async function getAnnouncements() {
   try {
-    const announcements = await axios.get("getAnnouncements");
-    return announcements.data; // Return the data
+    const userId = store.getters.userId;
+    const role = store.getters.role;
+
+    // Adjust the endpoint or parameters as needed to include userId and role
+    const response = await axios.get(`getAnnouncements/${role}/${userId}`);
+    return response.data; // Return the data
   } catch (error) {
-    console.error("Failed to fetch roles:", error);
-    throw error; // Rethrow the error
+    console.error("Failed to fetch announcements:", error);
+    throw error; // Rethrow the error for further handling if necessary
   }
 }
+
 export async function getTeacherAssignmentsDetails() {
   try {
     const teachers = await axios.get("getTeacherAssignmentsDetails");

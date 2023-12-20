@@ -1,7 +1,7 @@
 <template>
-  <v-container fluid class="rounded-lg bg-surface">
+  <v-container max-width="200px" class="rounded-lg bg-surface">
     <v-card>
-      <v-toolbar color="secondary-darken-1">
+      <v-toolbar color="background">
         <v-app-bar-nav-icon>
           <v-icon icon="mdi-post"></v-icon>
         </v-app-bar-nav-icon>
@@ -14,7 +14,7 @@
           <v-tabs
             v-model="tab"
             centered
-            bg-color="primary-darken-1"
+            bg-color="background"
             align-tabs="title"
           >
             <v-tab value="Announcement" class="rounded-lg">Announcement</v-tab>
@@ -74,7 +74,7 @@
                   <v-col cols="auto">
                     <v-btn
                       variant="flat"
-                      @click="dialog = true"
+                      @click="addAnnouncements1()"
                       color="secondary"
                     >
                       Add New
@@ -88,14 +88,19 @@
               <v-card
                 v-for="announcement in items"
                 :key="announcement.id"
-                class="mx-auto"
+                class="mx-auto ma-4"
                 variant="flat"
               >
+                <v-container>
+                  <v-divider
+                    :thickness="3"
+                    class="border-opacity-50 mb-5"
+                  ></v-divider>
+                </v-container>
                 <v-img
                   v-if="announcement.raw.picture_url === null"
                   height="200"
                   src="@/assets/img/logo/CHR-PNP-DEPED_banner-1896x800.png"
-                  cover
                 >
                   <v-toolbar color="rgba(0, 0, 0, 0)">
                     <v-toolbar-title class="text-h6 text-white">
@@ -144,7 +149,6 @@
                   v-else
                   height="200"
                   :src="`http://backend.test/${announcement.raw.picture_url}`"
-                  cover
                 >
                   <v-toolbar color="rgba(0, 0, 0, 0)">
                     <v-toolbar-title class="text-h6 text-white">
@@ -268,6 +272,14 @@
                     @change="handleFileChange"
                   />
                 </v-col>
+                <v-col cols="12">
+                  <StationChips
+                    v-model="editedAnnouncement.Station_IDs"
+                    label="Select Stations"
+                    itemText="Station_Name"
+                  />
+                  <!-- {{ editedAnnouncement }} -->
+                </v-col>
               </v-row>
             </v-form>
           </v-container>
@@ -279,7 +291,7 @@
             v-if="isEditing"
             color="secondary"
             variant="plain"
-            @click="closeDialog"
+            @click="closeDialog()"
           >
             Close
           </v-btn>
@@ -287,7 +299,7 @@
             v-else
             color="secondary"
             variant="plain"
-            @click="this.dialog = false"
+            @click="this.closeDialog()"
           >
             Close
           </v-btn>
@@ -387,46 +399,69 @@ export default {
     },
     editAnnouncement(announcement) {
       this.dialog = true;
+      this.isEditing = true;
       this.editedAnnouncement = { ...announcement.raw };
       this.originaleditedAnnouncement = { ...announcement.raw }; // Store the original value
+
       console.log(this.editedAnnouncement);
     },
     closeDialog() {
       this.dialog = false;
+      this.isEditing = false;
       this.editedAnnouncement = { ...this.originaleditedAnnouncement }; // Restore the original value
+    },
+    addAnnouncements1() {
+      this.isEditing = false;
+      this.editedAnnouncement = {};
+      this.picture_url = "";
+      this.dialog = true;
     },
     async saveEditedAnnouncement() {
       const { valid } = await this.$refs.form.validate();
       if (valid) {
         try {
-          // Create a FormData object
           const formData = new FormData();
-
-          // Append the id to the picture_url
           formData.append("title", this.editedAnnouncement.title);
           formData.append("id", this.editedAnnouncement.id);
           formData.append("content", this.editedAnnouncement.content);
-          formData.append("picture_url", this.picture_url);
 
-          // Make the Axios request to update the announcement
-          const response = await axios.post(`/updateAnnouncement`, formData);
+          // Check if picture_url is a File object before appending
+          if (this.picture_url instanceof File) {
+            formData.append("picture_url", this.picture_url);
+          }
 
-          // Check the response and handle accordingly
+          // Append each station ID individually
+          if (
+            this.editedAnnouncement.Station_IDs &&
+            this.editedAnnouncement.Station_IDs.length > 0
+          ) {
+            this.editedAnnouncement.Station_IDs.forEach((id, index) => {
+              formData.append(`Station_ID[${index}]`, id);
+            });
+          }
+
+          // Axios request to update the announcement
+          const response = await axios.post(`/updateAnnouncement`, formData, {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          });
+
+          // Handle the response
           if (response.data.success === true) {
-            // Show a success alert or perform other success-related actions here
-            this.dialog = false;
+            this.closeDialog();
             this.$refs.snackbar.openSnackbar(response.data.message, "success");
-            this.loadData(); // Reload the data after successful update
+            this.loadData(); // Reload data
           } else {
-            // Show the error Snackbar
             this.$refs.snackbar.openSnackbar(response.data.message, "error");
           }
         } catch (error) {
           console.error("Error updating announcement:", error);
-          // Handle errors as needed
+          // Handle errors
         }
       }
     },
+
     async addAnnouncement() {
       const { valid } = await this.$refs.form.validate();
       if (valid) {
@@ -434,23 +469,39 @@ export default {
           // Create a FormData object
           const formData = new FormData();
 
-          // Append the id to the picture_url
-
+          // Append standard fields to formData
           formData.append("user_ID", this.$store.state.userId);
           formData.append("title", this.editedAnnouncement.title);
-          formData.append("id", this.editedAnnouncement.id);
           formData.append("content", this.editedAnnouncement.content);
-          formData.append("picture_url", this.picture_url);
 
-          // Make the Axios request to update the announcement
-          const response = await axios.post(`/addAnnouncement`, formData);
+          // Handle the image file if present
+          if (this.picture_url) {
+            formData.append("picture_url", this.picture_url);
+          }
+
+          // Append each station ID from the array to formData
+          if (
+            this.editedAnnouncement.Station_IDs &&
+            this.editedAnnouncement.Station_IDs.length > 0
+          ) {
+            this.editedAnnouncement.Station_IDs.forEach((id, index) => {
+              formData.append(`Station_ID[${index}]`, id);
+            });
+          }
+
+          // Make the Axios request to add the announcement
+          const response = await axios.post(`/addAnnouncement`, formData, {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          });
 
           // Check the response and handle accordingly
           if (response.data.success === true) {
             // Show a success alert or perform other success-related actions here
-            this.dialog = false;
+            this.closeDialog();
             this.$refs.snackbar.openSnackbar(response.data.message, "success");
-            this.loadData(); // Reload the data after successful update
+            this.loadData(); // Reload the data after successful addition
           } else {
             // Show the error Snackbar
             this.$refs.snackbar.openSnackbar(response.data.message, "error");
@@ -463,12 +514,7 @@ export default {
     },
   },
 
-  computed: {
-    isEditing() {
-      console.log("editedAnnouncement.raw.id:", this.editedAnnouncement.id);
-      return Boolean(this.editedAnnouncement.id);
-    },
-  },
+  computed: {},
   // Add other methods for handling announcements as needed
 };
 </script>

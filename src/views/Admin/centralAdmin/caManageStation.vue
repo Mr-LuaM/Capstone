@@ -1,7 +1,7 @@
 <template>
   <v-container fluid class="rounded-lg bg-surface">
     <v-card flat>
-      <v-card-title class="d-flex align-center pe-2 bg-primary">
+      <v-card-title class="d-flex align-center pe-2 bg-background">
         <v-icon icon="mdi-map-marker"></v-icon> &nbsp; Manage Station
 
         <v-spacer></v-spacer>
@@ -11,7 +11,6 @@
             icon="mdi-filter-variant"
             size="small"
             id="menu-activator"
-            color="white"
             variant="text"
           ></v-btn>
         </v-col>

@@ -16,7 +16,7 @@
       <v-app-bar-nav-icon @click="toggleSidebar"></v-app-bar-nav-icon>
       <v-toolbar-title class="ml-2">Station Admin</v-toolbar-title>
       <v-spacer></v-spacer>
-
+      <NotifVue/>
       <ThemeSwitcher />
       <AvatarMenu />
     </v-app-bar>

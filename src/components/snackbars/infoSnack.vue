@@ -5,8 +5,18 @@
     :color="snack.color"
     elevation="24"
     :location="snack.location"
+    border="start"
+    variant="tonal"
+    max-height="200px"
+    class="ma-2"
+    closable
   >
     {{ snack.message }}
+    <template v-slot:actions>
+      <v-btn :color="snack.color" variant="text" @click="show = false">
+        <v-icon>mdi-close-circle</v-icon>
+      </v-btn>
+    </template>
   </v-snackbar>
 </template>
 
@@ -19,7 +29,7 @@ export default {
         message: "",
         timeout: 2000,
         color: "error",
-        location: "top right",
+        location: "bottom right",
       },
     };
   },

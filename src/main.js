@@ -8,10 +8,12 @@ import "../src/assets/css/main.css";
 import axios from "axios";
 import VueApexCharts from "vue3-apexcharts";
 
+// axios.defaults.baseURL = "http://localhost/lavalustApi/";
 axios.defaults.baseURL = "http://backend.test/";
 
 // Global components
 import infoSnack from "./components/snackbars/infoSnack.vue";
+import NotifVue from "./components/buttons/Notif.vue";
 import ThemeSwitcher from "./components/buttons/ThemeSwitcher.vue";
 import AvatarMenu from "./components/buttons/AvatarMenu.vue";
 import FileInput from "./components/forms/FileInput.vue";
@@ -37,6 +39,10 @@ import GenericNumber from "./components/forms/Generic/GenericNumber.vue";
 import ImageInput from "./components/forms/ImageInput.vue";
 import GradeFields from "./components/forms/GradeFields.vue";
 import FacultyAutoselect from "./components/forms/FacultyAutoselect.vue";
+import StationChips from "./components/forms/StationChips.vue";
+import GenericDate from "./components/forms/Generic/GenericDate.vue";
+import GenericTime from "./components/forms/Generic/GenericTime.vue";
+
 //address
 import Address from "./components/forms/address/Address.vue";
 
@@ -81,6 +87,10 @@ app.component("GenericTextArea", GenericTextArea);
 app.component("GenericNumber", GenericNumber);
 app.component("ImageInput", ImageInput);
 app.component("GradeFields", GradeFields);
+app.component("StationChips", StationChips);
+app.component("NotifVue", NotifVue);
+app.component("GenericDate", GenericDate);
+app.component("GenericTime", GenericTime);
 //address
 app.component("Address", Address);
 

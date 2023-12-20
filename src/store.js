@@ -3,6 +3,7 @@ import createPersistedState from "vuex-persistedstate";
 import axios from "axios";
 import { createStore } from "vuex";
 
+
 export default createStore({
   state: {
     isLoggedIn: false,
@@ -12,6 +13,9 @@ export default createStore({
     userProfile: null,
     role: null,
     stationId: null, // Add stationId property
+
+      isEnrollmentOpen: true, // Set to true during enrollment time
+
   },
   mutations: {
     setLoggedIn(state, isLoggedIn) {
@@ -42,8 +46,15 @@ export default createStore({
       state.stationId = stationId;
       console.log("Setting stationId:", stationId);
     },
+    updateEnrollmentStatus(state, status) {
+      console.log("Mutation called: updateEnrollmentStatus", status);
+      state.isEnrollmentOpen = status;
+    },
   },
   actions: {
+    toggleEnrollmentStatus({ commit, state }) {
+      commit('updateEnrollmentStatus', !state.isEnrollmentOpen);
+    },
     async fetchUserDetails({ commit, getters }) {
       try {
         const userId = getters.userId;
@@ -102,6 +113,7 @@ export default createStore({
     userProfile: (state) => state.userProfile,
     role: (state) => state.role,
     stationId: (state) => state.stationId, // Add stationId getter
+    isEnrollmentOpen: (state) => state.isEnrollmentOpen, // Add stationId getter
   },
   plugins: [
     createPersistedState({
@@ -112,6 +124,7 @@ export default createStore({
         "userProfile",
         "role",
         "stationId",
+        "isEnrollmentOpen",
       ],
     }),
   ],

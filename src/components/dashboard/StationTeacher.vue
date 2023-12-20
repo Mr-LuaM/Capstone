@@ -4,7 +4,7 @@
       <v-card-subtitle class="font-weight-bold">
         Teachers<br />
       </v-card-subtitle>
-      <v-chip class="mt-n2 mr-3" color="info" text-color="white">
+      <v-chip class="mt-n2 mr-3" color="success" text-color="white">
         <p class="font-weight-bold">{{ teacherStats.percentageIncrease }}%</p>
       </v-chip>
     </div>

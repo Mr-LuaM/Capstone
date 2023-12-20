@@ -1,7 +1,7 @@
 <template>
   <v-container fluid class="rounded-lg bg-surface">
     <v-card flat>
-      <v-card-title class="d-flex align-center pe-2 bg-secondary-darken-1">
+      <v-card-title class="d-flex align-center pe-2 bg-background">
         <v-icon icon="mdi-account"></v-icon> &nbsp; Applicant History
 
         <v-spacer></v-spacer>
@@ -11,7 +11,7 @@
             icon="mdi-filter-variant"
             size="small"
             id="menu-activator"
-            color="white"
+         
             variant="text"
           ></v-btn>
         </v-col>
@@ -107,25 +107,7 @@
           >
           </v-btn>
 
-          <v-btn
-            density="compact"
-            size="x-large"
-            @click="quickapprove(item)"
-            color="success"
-            variant="plain"
-            icon="mdi-content-save"
-          >
-          </v-btn>
-
-          <v-btn
-            density="compact"
-            size="x-large"
-            @click="openConfirmDialog(item.id)"
-            color="primary"
-            variant="plain"
-            icon="mdi-archive"
-          >
-          </v-btn>
+         
         </template>
       </v-data-table>
     </v-card>
@@ -333,7 +315,7 @@ export default {
           title: "Actions",
           key: "actions",
           sortable: false,
-          width: "190px",
+   
         },
         { title: "Status", key: "Status" },
         { title: "IMG", key: "Selected_File1" },

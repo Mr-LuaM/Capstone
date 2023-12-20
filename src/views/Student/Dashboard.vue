@@ -38,23 +38,22 @@
       <v-col cols="8" class="ma-1 pa-2"> <SchoolCalendar /></v-col>
 
       <v-col class="ma-1 pa-2">
-        <v-card class="mx-auto" max-width="450">
-          <v-toolbar color="secondary-darken-1">
-            <v-btn variant="text" icon="mdi-menu"></v-btn>
-
-            <v-toolbar-title>Inbox</v-toolbar-title>
-
-            <v-spacer></v-spacer>
-
-            <v-btn variant="text" icon="mdi-magnify"></v-btn>
-          </v-toolbar>
-
-          <v-list :items="items" item-props lines="three">
-            <template v-slot:subtitle="{ subtitle }">
-              <div v-html="subtitle"></div>
-            </template>
-          </v-list> </v-card
-      ></v-col>
+        <div>
+    <!-- Vuetify Data Table -->
+    <v-data-table :headers="headers" :items="enrollments" class="elevation-1">
+      <template v-slot:item="{ item }">
+        <tr>
+          <td>{{ item.course.Course_Name }}</td>
+          <td>    <v-chip :color="getStatusColor(item.Enrollment_Status)" label small>
+              {{ item.Enrollment_Status }}
+            </v-chip></td>
+          <td>{{ item.course.Credits }}</td>
+          <td>{{ item.grade }}</td>
+        </tr>
+      </template>
+    </v-data-table>
+    <div>Total Credits: {{ totalCredits }}</div>
+  </div></v-col>
     </v-row>
   </v-container>
 </template>
@@ -69,6 +68,7 @@ import LineChart from "../../components/dashboard/linechart";
 import StackChart from "../../components/dashboard/stackchart";
 import SchoolCalendar from "@/components/scheduler/SchoolCalendar.vue";
 import ProgressBar from "@/components/dashboard/progressbar.vue";
+import axios from "axios";
 
 export default {
   components: {
@@ -84,7 +84,15 @@ export default {
   name: "AvatarMenu",
   data() {
     return {
-      backendUrl: "http://backend.test/", // Define your backend URL here
+      backendUrl: "http://backend.test/",
+      enrollments: [],
+      totalCredits: 0, // Define your backend URL here
+      headers: [
+        { title: 'Course', value: 'course.Course_Name' },
+        { title: 'Status', value: 'Enrollment_Status' },
+        { title: 'Credits', value: 'course.Credits' },
+        { title: 'Grade', value: 'grade' }
+      ],
     };
   },
   computed: {
@@ -106,7 +114,35 @@ export default {
       };
     },
   },
+  created() {
+    this.fetchStudentData();
+  },
+
   methods: {
+    getStatusColor(status) {
+    switch (status) {
+      case 'passed':
+        return 'green';
+      case 'failed':
+        return 'red';
+      case 'ongoing':
+        return 'blue';
+      default:
+        return 'grey';
+    }
+  },
+    async fetchStudentData() {
+      try {
+        const userId = this.$store.state.userId;
+        const response = await axios.post('/studentData', { user_id: userId });
+        
+        this.enrollments = response.data.enrollments;
+        this.totalCredits = response.data.totalCredits;
+        // Process and display data as needed
+      } catch (error) {
+        console.error('Error fetching student data:', error);
+      }
+    },
     getFullImageUrl() {
       return this.backendUrl + this.userProfile;
     },

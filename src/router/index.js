@@ -7,8 +7,14 @@ import StudNav from "../layouts/StudNav";
 import HomeView from "../views/HomeView.vue";
 import createAccount from "../views/CreateAccount.vue";
 import Teacher from "../layouts/Teacher.vue";
+import store from "@/store";
 
 const routes = [
+  {
+    path: "/unauthorized",
+    name: "unauthorized",
+    component: () => import("../views/404.vue"),
+  },
   {
     path: "/",
     name: "home",
@@ -93,6 +99,34 @@ const routes = [
       {
         path: "",
         component: () => import("../views/Registration/ApplicationForm.vue"),
+        beforeEnter: (to, from, next) => {
+          // Check the enrollment status
+          if (store.state.isEnrollmentOpen) {
+            next(); // Allow navigation to the route
+          } else {
+            // Enrollment is closed, you can redirect to another route or display a message
+            next("/enrollment-closed"); // Redirect to a "closed" page
+          }
+        },
+      },
+    ],
+  },
+  {
+    path: "/enrollment-closed",
+    name: "enrollment-closed",
+    children: [
+      {
+        path: "",
+        component: () => import("../views/404.vue"),
+        beforeEnter: (to, from, next) => {
+          // Check the enrollment status
+          if (!store.state.isEnrollmentOpen) {
+            next(); // Allow navigation to the route
+          } else {
+            // Enrollment is closed, you can redirect to another route or display a message
+            next("/application"); // Redirect to a "closed" page
+          }
+        },
       },
     ],
   },
@@ -171,6 +205,16 @@ const routes = [
         component: () => import("../views/Teachers/t.Schedule.vue"),
       },
       {
+        path: "manage-exams",
+        name: "tmanageexams",
+        component: () => import("../views/Teachers/tManageExams.vue"),
+      },
+      {
+        path: "manage-exams/:id",
+        name: "teditexams",
+        component: () => import("../views/Teachers/tManageExams.vue"),
+      },
+      {
         path: "announcements",
         name: "tAnnouncement",
         component: () => import("../views/Teachers/t.Announcements.vue"),
@@ -206,6 +250,16 @@ const routes = [
         path: "edit-accounts",
         name: "sEditAccounts",
         component: () => import("../views/Student/Profile.vue"),
+      },
+      {
+        path: "exams",
+        name: "sexams",
+        component: () => import("../views/Student/exams.vue"),
+      },
+      {
+        path: "/take-exam/:examId",
+        name: "takeExam",
+        component: () => import("../views/Student/takeExam.vue"),
       },
     ],
   },

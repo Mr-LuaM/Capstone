@@ -16,7 +16,7 @@
       <v-app-bar-nav-icon @click="toggleSidebar"></v-app-bar-nav-icon>
       <v-toolbar-title class="ml-2"> Student</v-toolbar-title>
       <v-spacer></v-spacer>
-
+      <NotifVue />
       <ThemeSwitcher />
       <AvatarMenu />
     </v-app-bar>
@@ -54,6 +54,14 @@
             prepend-icon="mdi-post"
           >
             <v-list-item-title>Announcements</v-list-item-title>
+          </v-list-item>
+          <v-list-item
+            link
+            to="/student/exams"
+            :class="{ highlight: isRouteActive('/student/exams') }"
+            prepend-icon="mdi-pencil"
+          >
+            <v-list-item-title>Exam</v-list-item-title>
           </v-list-item>
 
           <v-container>

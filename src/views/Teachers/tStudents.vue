@@ -1,7 +1,7 @@
 <template>
   <v-container fluid class="rounded-lg bg-surface">
     <v-card flat>
-      <v-card-title class="d-flex align-center pe-2 bg-primary">
+      <v-card-title class="d-flex align-center pe-2 bg-background">
         <v-icon icon="mdi-human-greeting"></v-icon> &nbsp; Manage Students
 
         <v-spacer></v-spacer>
@@ -289,195 +289,115 @@ export default {
     },
 
     async exportStudents() {
-      try {
-        const response = await axios.post("getStudents", {
-          user_id: this.$store.state.userId,
-        });
+  try {
+    const response = await axios.post("getStudents", {
+      user_id: this.$store.state.userId,
+    });
 
-        const teachingAssignments = response.data;
+    const teachingAssignments = response.data;
 
-        // Create a workbook
-        const wb = XLSX.utils.book_new();
+    // Create a workbook
+    const wb = XLSX.utils.book_new();
 
-        // Add a sheet for teaching assignments
-        const assignmentData = teachingAssignments.map((assignment) => ({
-          "Teaching Assignment ID":
-            assignment.teaching_assignment.TeachingAssignment_ID,
-          "Teacher ID": assignment.teaching_assignment.Teacher_ID,
-          "Course ID": assignment.teaching_assignment.course_id,
-          "Station ID": assignment.teaching_assignment.station_id,
-          "Course Name": assignment.teaching_assignment.Course_Name,
-          "Station Name": assignment.teaching_assignment.Station_Name,
-          "User ID": assignment.teaching_assignment.User_ID,
-          "Profile Picture": assignment.teaching_assignment.Profile_Picture,
-          "First Name": assignment.teaching_assignment.First_Name,
-          "Middle Name": assignment.teaching_assignment.Middle_Name,
-          "Last Name": assignment.teaching_assignment.Last_Name,
-          "Name Extension": assignment.teaching_assignment.Name_Extension,
-          Age: assignment.teaching_assignment.Age,
-          Sex: assignment.teaching_assignment.Sex,
-          Address: assignment.teaching_assignment.Address,
-          Birthday: assignment.teaching_assignment.Birthday,
-          Status: assignment.teaching_assignment.Status,
-          Nationality: assignment.teaching_assignment.Nationality,
-          Religion: assignment.teaching_assignment.Religion,
-          "Teacher Phone Number":
-            assignment.teaching_assignment.Teacher_PhoneNum,
-          Grade: "", // New column for grades
-        }));
-        const assignmentWs = XLSX.utils.json_to_sheet(assignmentData);
+    // Process students data for the sheet
+    const studentData = teachingAssignments.reduce((acc, assignment) => {
+      return acc.concat(
+        assignment.students.map((student) => ({
+          "Enrollment ID": student.Enrollment_ID,
+          "Student ID": student.Stud_ID,
+          "Course ID": student.Course_ID,
+          "Station ID": student.Station_ID,
+          "Enrollment Date": student.Enrollment_Date,
+          "Enrollment Status": student.Enrollment_Status,
+          "User ID": student.User_ID,
+          "Profile Picture": student.Profile,
+          "First Name": student.First_Name,
+          "Middle Name": student.Middle_Name,
+          "Last Name": student.Last_Name,
+          "Name Extension": student.Name_Extension,
+          "Age": student.Age,
+          "Sex": student.Sex,
+          "Address": student.Address,
+          "Birthday": student.Birthday,
+          "Birthplace": student.Birthplace,
+          "Status": student.Status,
+          "Nationality": student.Nationality,
+          "Religion": student.Religion,
+          "Phone Number": student.Stud_PhoneNum,
+          "Grade": student.Grade, // Assuming 'Grade' is a field in your student data
+        }))
+      );
+    }, []);
+    const studentWs = XLSX.utils.json_to_sheet(studentData);
 
-        // Style header row with color
-        assignmentWs["!header"] = [
-          {
-            t: "s",
-            v: "Header Text",
-            s: {
-              font: { color: { rgb: "FFFFFF" } },
-              fill: { fgColor: { rgb: "333333" } },
-            },
-          },
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          {
-            t: "s",
-            v: "Grade",
-            s: {
-              font: { color: { rgb: "FFFFFF" } },
-              fill: { fgColor: { rgb: "333333" } },
-            },
-          },
-        ];
+    // Style header row with color (if needed)
+    // You can customize this section based on your needs
 
-        XLSX.utils.book_append_sheet(wb, assignmentWs, "Teaching Assignments");
+    XLSX.utils.book_append_sheet(wb, studentWs, "Students");
 
-        // Add a sheet for students
-        const studentData = teachingAssignments.reduce((acc, assignment) => {
-          return acc.concat(
-            assignment.students.map((student) => ({
-              "Enrollment ID": student.Enrollment_ID,
-              "Student ID": student.Stud_ID,
-              "Course ID": student.Course_ID,
-              "Station ID": student.Station_ID,
-              "Enrollment Date": student.Enrollment_Date,
-              "Enrollment Status": student.Enrollment_Status,
-              "User ID": student.User_ID,
-              Profile: student.Profile,
-              "First Name": student.First_Name,
-              "Middle Name": student.Middle_Name,
-              "Last Name": student.Last_Name,
-              "Name Extension": student.Name_Extension,
-              Age: student.Age,
-              Sex: student.Sex,
-              Address: student.Address,
-              Birthday: student.Birthday,
-              Birthplace: student.Birthplace,
-              Status: student.Status,
-              Nationality: student.Nationality,
-              Religion: student.Religion,
-              "Phone Number": student.Stud_PhoneNum,
-              Grade: student.Grade, // New column for grades
-            }))
-          );
-        }, []);
-        const studentWs = XLSX.utils.json_to_sheet(studentData);
+    // Save the workbook to a file
+    XLSX.writeFile(wb, "students_data.xlsx");
+  } catch (error) {
+    console.error("Failed to export students:", error);
+    // Handle errors as needed
+  }
+},
 
-        // Style header row with color
-        studentWs["!header"] = [
-          {
-            t: "s",
-            v: "Header Text",
-            s: {
-              font: { color: { rgb: "FFFFFF" } },
-              fill: { fgColor: { rgb: "333333" } },
-            },
-          },
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          {
-            t: "s",
-            v: "Grade",
-            s: {
-              font: { color: { rgb: "FFFFFF" } },
-              fill: { fgColor: { rgb: "333333" } },
-            },
-          },
-        ];
 
-        XLSX.utils.book_append_sheet(wb, studentWs, "Students");
+async importGrades(event) {
+  // Get the current date
+  const currentDate = new Date();
 
-        // Save the workbook to a file
-        XLSX.writeFile(wb, "students_data.xlsx");
-      } catch (error) {
-        console.error("Failed to export students:", error);
-        // Handle errors as needed
-      }
-    },
+  const firstEnrollment = this.enrollmentsByCourse[0];
 
-    async importGrades(event) {
-      const file = event.target.files[0];
+const enrollmentDate = new Date(firstEnrollment.Enrollment_Date);
+const durationInMonths = parseInt(firstEnrollment.Duration, 10);
 
-      if (file) {
-        const formData = new FormData();
-        formData.append("grades_file", file);
+  // Calculate the difference in months
+  const monthsDiff =
+    (currentDate.getFullYear() - enrollmentDate.getFullYear()) * 12 +
+    currentDate.getMonth() - 
+    enrollmentDate.getMonth();
 
-        try {
-          const response = await axios.post("importGradesHandler", formData, {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          });
+  console.log("Months Difference:", monthsDiff);
 
-          if (response.data.success) {
-            console.log("Grades imported successfully");
-            // Handle success
-          } else {
-            console.error(response.data.message);
-            // Handle failure
-          }
-        } catch (error) {
-          console.error("Error importing grades:", error);
-          // Handle error
-        }
-      } else {
-        console.error("No file selected");
-        // Handle error
-      }
-    },
-  },
+  // Check if the duration criteria is met
+  if (monthsDiff < durationInMonths) {
+    // Provide feedback that editing is not allowed
+    this.$refs.snackbar.openSnackbar("Duration is not met", "error");
+    return; // Exit the function if the duration criteria is not met
+  }
+
+  // Proceed if the duration criteria is met
+  const file = event.target.files[0];
+  if (!file) {
+    console.error("No file selected");
+    return; // Exit the function if no file is selected
+  }
+
+  // If a file is selected, proceed with form data creation and Axios call
+  const formData = new FormData();
+  formData.append("grades_file", file);
+
+  try {
+    const response = await axios.post("importGradesHandler", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    if (response.data.success) {
+      console.log("Grades imported successfully");
+      // Handle success
+    } else {
+      console.error(response.data.message);
+      // Handle failure
+    }
+  } catch (error) {
+    console.error("Error importing grades:", error);
+    // Handle error
+  }
+},
+  }
 };
 </script>

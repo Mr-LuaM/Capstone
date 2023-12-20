@@ -7,13 +7,13 @@
           class="rounded-lg bg-image bg-color"
           style="position: relative"
         >
-          <v-row align="center" no-gutters>
-            <v-col cols="12" md="4">
+        <v-row align="center" no-gutters>
+            <v-col cols="12" md="5">
               <v-avatar color="grey" size="150" class="rounded-lg">
                 <v-img :src="getFullImageUrl()" alt="User Avatar" cover></v-img>
               </v-avatar>
             </v-col>
-            <v-col cols="12" md="5" class="text-black">
+            <v-col cols="12" md="7" class="text-white">
               <v-list-item>
                 <v-list-item-content>
                   <v-list-item-subtitle>Welcome</v-list-item-subtitle>
@@ -42,24 +42,7 @@
     <v-row>
       <v-col cols="4" class="ma-1 pa-2"> <LineChart /></v-col>
       <v-col cols="4" class="ma-1 pa-2"><StackChart /></v-col>
-      <v-col class="ma-1 pa-2">
-        <v-card class="mx-auto" max-width="450">
-          <v-toolbar color="secondary-darken-1">
-            <v-btn variant="text" icon="mdi-menu"></v-btn>
-
-            <v-toolbar-title>Inbox</v-toolbar-title>
-
-            <v-spacer></v-spacer>
-
-            <v-btn variant="text" icon="mdi-magnify"></v-btn>
-          </v-toolbar>
-
-          <v-list :items="items" item-props lines="three">
-            <template v-slot:subtitle="{ subtitle }">
-              <div v-html="subtitle"></div>
-            </template>
-          </v-list> </v-card
-      ></v-col>
+     
     </v-row>
   </v-container>
 </template>
@@ -157,6 +140,6 @@ export default {
   position: relative;
 }
 .bg-color {
-  background-color: skyblue;
+  background-color: #003366;
 }
 </style>

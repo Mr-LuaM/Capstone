@@ -17,6 +17,7 @@
       <v-toolbar-title class="ml-2">Admin Dashboard</v-toolbar-title>
       <v-spacer></v-spacer>
 
+      <NotifVue/>
       <ThemeSwitcher />
       <AvatarMenu />
     </v-app-bar>
@@ -116,21 +117,55 @@
       </v-navigation-drawer>
       <!-- Admin Page Main Content -->
       <v-main>
-        <v-container fluid class="pa-7">
-          <v-breadcrumbs :items="breadcrumbs">
-            <template v-slot:prepend>
-              <v-icon size="small" icon="$vuetify"></v-icon>
-            </template>
-          </v-breadcrumbs>
-          <!-- Main content of the admin page goes here -->
-          <router-view></router-view>
-        </v-container>
+       
+        <v-container fluid class="pa-7" >
+          <v-row>
+            <v-col cols="10">
+  <v-breadcrumbs :items="breadcrumbs">
+    
+    <template v-slot:prepend>
+      <v-icon size="small" icon="$vuetify"></v-icon>
+    </template>
+  </v-breadcrumbs>
+  </v-col>
+  <v-col class="align-right mb-n8">
+    <!-- Conditionally render the <v-switch> based on the route -->
+      <div>
+    <!-- Bind the color prop to a computed property -->
+    <v-switch
+  label="Toggle Enrollment Link"
+  v-if="isApplicantsRoute"
+  v-model="enrollmentStatus"
+  :color="switchColor"
+></v-switch>
+
+
+    <!-- Main content of the component goes here -->
+
+    <!-- Example of updating the enrollment status using a Vuex store mutation -->
+   
+  </div>
+  </v-col>
+</v-row>
+
+    <v-row>
+     
+
+      <v-col>
+        <!-- Main content of the admin page goes here -->
+        <router-view></router-view>
+      </v-col>
+    </v-row>
+  </v-container>
+
       </v-main>
     </v-row>
   </v-app>
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
+
 export default {
   data() {
     return {
@@ -138,19 +173,30 @@ export default {
       breadcrumbs: [],
     };
   },
+  computed: {
+    ...mapGetters(['isEnrollmentOpen']),
+    isApplicantsRoute() {
+      return this.$route.path === "/admin/applicants";
+    },
+    switchColor() {
+      return this.isEnrollmentOpen ? "success" : "error";
+    },
+    enrollmentStatus: {
+      get() {
+        return this.isEnrollmentOpen;
+      },
+      set(value) {
+        this.$store.commit("updateEnrollmentStatus", value);
+      }
+    },
+  },
   methods: {
     toggleSidebar() {
       this.sidebarOpen = !this.sidebarOpen;
     },
     logout() {
-      // Perform logout actions here
-      // For example, clear the token from localStorage
       localStorage.removeItem("jwt_token");
-
-      // Clear user information from Vuex store
       this.$store.dispatch("logout");
-
-      // Redirect to the login page and clear navigation history
       this.$router.push({ path: "/login" }).catch(() => {});
     },
     isRouteActive(route) {
@@ -166,6 +212,9 @@ export default {
       );
 
       console.log("Breadcrumbs:", this.breadcrumbs);
+    },
+    updateEnrollmentStatus() {
+      this.enrollmentStatus = !this.enrollmentStatus;
     },
   },
   watch: {

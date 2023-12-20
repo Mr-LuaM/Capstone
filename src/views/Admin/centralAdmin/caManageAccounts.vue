@@ -1,7 +1,7 @@
 <template>
   <v-container fluid class="rounded-lg bg-surface">
     <v-card>
-      <v-toolbar color="primary-darken-1">
+      <v-toolbar color="background">
         <v-app-bar-nav-icon>
           <v-icon icon="mdi-account"></v-icon
         ></v-app-bar-nav-icon>
@@ -11,7 +11,12 @@
         <v-spacer></v-spacer>
 
         <template v-slot:extension>
-          <v-tabs v-model="tab" centered bg-color="primary" grow>
+          <v-tabs
+            v-model="tab"
+            centered
+            bg-color="background"
+            align-tabs="title"
+          >
             <v-tab value="StationAccounts">Station Accounts</v-tab>
             <v-tab value="TeacherAccounts">Teachers</v-tab>
           </v-tabs>
@@ -77,7 +82,7 @@
                   v-for="(item, i) in items"
                   :key="item.raw.StationAdmin_ID"
                   class="mb-6"
-                  cols="3"
+                  cols="4"
                 >
                   <v-card
                     max-width="440px"
@@ -306,7 +311,7 @@
                   v-for="(item, i) in items"
                   :key="item.raw.Teacher_ID"
                   class="mb-6"
-                  cols="3"
+                  cols="4"
                 >
                   <v-card
                     max-width="440px"
@@ -638,7 +643,7 @@ export default {
       console.log("StationAdminID:", stationAdminId);
       this.$refs.confirmationModal.dialog = true;
       this.$refs.confirmationModal.confirmAction = () =>
-        this.changeAdminStation(station, stationAdminId);
+        this.changeTeacherStation(station, stationAdminId);
     },
     async changeAdminStation(station, stationAdminId) {
       try {
@@ -647,7 +652,7 @@ export default {
         formData.append("Station_Admin_ID", stationAdminId);
 
         // Make the Axios POST request
-        const response = await axios.post("changeTeacherStation", formData);
+        const response = await axios.post("changeAdminStation", formData);
 
         if (response.data.success === true) {
           this.loadData();

@@ -16,7 +16,7 @@
       <v-app-bar-nav-icon @click="toggleSidebar"></v-app-bar-nav-icon>
       <v-toolbar-title class="ml-2"> Teacher</v-toolbar-title>
       <v-spacer></v-spacer>
-
+      <NotifVue />
       <ThemeSwitcher />
       <AvatarMenu />
     </v-app-bar>
@@ -66,7 +66,7 @@
             link
             to="/teacher/schedule"
             :class="{ highlight: isRouteActive('/teacher/schedule') }"
-            prepend-icon="mdi-map-marker"
+            prepend-icon="mdi-calendar"
           >
             <v-list-item-title>Schedule</v-list-item-title>
           </v-list-item>

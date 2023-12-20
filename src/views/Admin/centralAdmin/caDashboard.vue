@@ -13,7 +13,7 @@
                 <v-img :src="getFullImageUrl()" alt="User Avatar" cover></v-img>
               </v-avatar>
             </v-col>
-            <v-col cols="12" md="7" class="text-black">
+            <v-col cols="12" md="7" class="text-white">
               <v-list-item>
                 <v-list-item-content>
                   <v-list-item-subtitle>Welcome</v-list-item-subtitle>
@@ -44,26 +44,9 @@
       </v-col>
     </v-row>
     <v-row>
-      <v-col cols="4" class="ma-1 pa-2"> <LineChart /></v-col>
-      <v-col cols="4" class="ma-1 pa-2"><StackChart /></v-col>
-      <v-col class="ma-1 pa-2">
-        <v-card class="mx-auto" max-width="450">
-          <v-toolbar color="secondary-darken-1">
-            <v-btn variant="text" icon="mdi-menu"></v-btn>
-
-            <v-toolbar-title>Inbox</v-toolbar-title>
-
-            <v-spacer></v-spacer>
-
-            <v-btn variant="text" icon="mdi-magnify"></v-btn>
-          </v-toolbar>
-
-          <v-list :items="items" item-props lines="three">
-            <template v-slot:subtitle="{ subtitle }">
-              <div v-html="subtitle"></div>
-            </template>
-          </v-list> </v-card
-      ></v-col>
+      <v-col cols="4" class="pa-2"> <LineChart /></v-col>
+      <v-col cols="4" class="pa-2"><StackChart /></v-col>
+      <v-col cols="4" class="pa-2"><PieChart /></v-col>
     </v-row>
   </v-container>
 </template>
@@ -76,6 +59,7 @@ import TeacherStatistics from "../../../components/dashboard/TeacherStatistics";
 import StudentStatistics from "../../../components/dashboard/StudentStatisctics";
 import LineChart from "../../../components/dashboard/linechart";
 import StackChart from "../../../components/dashboard/stackchart";
+import PieChart from "../../../components/dashboard/pie.vue";
 
 export default {
   components: {
@@ -85,6 +69,8 @@ export default {
     StudentStatistics,
     LineChart,
     StackChart,
+
+    PieChart,
   },
   name: "AvatarMenu",
   data() {
@@ -161,6 +147,6 @@ export default {
   position: relative;
 }
 .bg-color {
-  background-color: skyblue;
+  background-color: #003366;
 }
 </style>
