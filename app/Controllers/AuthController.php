@@ -278,7 +278,9 @@ class AuthController extends BaseController
             $roleModels = [
                 '3' => \App\Models\StationAdminModel::class,
                 '6' => \App\Models\ApplicantsModel::class,
-                '1' => \App\Models\MainAdminModel::class,
+                '2' => \App\Models\MainAdminModel::class,
+                '4' => \App\Models\TeachersModel::class,
+                '5' => \App\Models\StudentsModel::class,
                 // Add more entries for other roles as needed
             ];
 

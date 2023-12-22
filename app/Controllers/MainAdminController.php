@@ -631,26 +631,28 @@ class MainAdminController extends BaseController
     {
         try {
             $stationId = $this->request->getPost('Station_ID');
-            $teacherId = $this->request->getPost('Station_Admin_ID'); // Change to Teacher_ID
+            $teacherId = $this->request->getPost('Station_Admin_ID'); // Ensure this is the correct post variable for the teacher's ID
 
-            // Get the teacher by Teacher_ID
-            $teacher = $this->teacherAssignments->where('Teacher_ID', (int) $teacherId)->first();
+            // Attempt to retrieve an existing teaching assignment for the teacher
+            $teacherAssignment = $this->teacherAssignments->where('Teacher_ID', (int) $teacherId)->first();
 
-            if (!$teacher) {
-                return $this->respond(['error' => 'Teacher not found'], 404);
-            }
-
-            // Update the station for the teacher
-            $teacherData = [
-                'station_id' => $stationId, // Ensure that 'station_id' is the correct column name in your table
+            // Define the data for the teacher's station assignment
+            $assignmentData = [
+                'Teacher_ID' => $teacherId,
+                'station_id' => $stationId, // Ensure 'station_id' matches the column name in your table
             ];
 
-            // Perform the update
-            $this->teacherAssignments->set($teacherData)
-                ->where('Teacher_ID', (int) $teacherId)
-                ->update();
-
-            return $this->respond(['success' => true, 'message' => 'Station updated successfully']);
+            if (!$teacherAssignment) {
+                // No existing assignment found, create a new one
+                $this->teacherAssignments->insert($assignmentData);
+                return $this->respond(['success' => true, 'message' => 'New teaching assignment created successfully']);
+            } else {
+                // Existing assignment found, update the station
+                $this->teacherAssignments->set($assignmentData)
+                    ->where('Teacher_ID', (int) $teacherId)
+                    ->update();
+                return $this->respond(['success' => true, 'message' => 'Teacher station updated successfully']);
+            }
         } catch (\Exception $e) {
             // Log the exception for debugging and auditing
             log_message('error', 'Exception during changeTeacherStation: ' . $e->getMessage());
@@ -987,15 +989,19 @@ class MainAdminController extends BaseController
     {
         $builder = $this->db->table('Users U');
         $builder->select('U.Email AS User_Email, U.Role_ID AS User_Role, T.*, TA.TeachingAssignment_ID, TA.course_id, TA.station_id, S.Station_Name, C.Course_Name');
-        $builder->join('Teachers T', 'U.User_ID = T.User_ID');
-        $builder->join('TeachingAssignments TA', 'T.Teacher_ID = TA.Teacher_ID');
-        $builder->join('Stations S', 'TA.station_id = S.Station_ID');
-        $builder->join('Courses C', 'TA.course_id = C.Course_ID');
+        $builder->join('Teachers T', 'U.User_ID = T.User_ID', 'left');
+        $builder->join('TeachingAssignments TA', 'T.Teacher_ID = TA.Teacher_ID', 'left');
+        $builder->join('Stations S', 'TA.station_id = S.Station_ID', 'left');
+        $builder->join('Courses C', 'TA.course_id = C.Course_ID', 'left');
+        // Add a where clause to filter only teachers. Adjust 'X' to the actual role ID for teachers.
+        $builder->where('U.Role_ID', 4);
+        $builder->where('U.isVerified', 1);
 
         $result = $builder->get()->getResultArray();
 
         return $this->respond($result);
     }
+
 
 
     public function toggleTeacherStatus($id)

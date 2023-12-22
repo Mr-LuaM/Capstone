@@ -301,11 +301,10 @@ class StationAdminController extends BaseController
             // Validate station_id if needed
 
             // Fetch teacher assignments based on the station_id
-            // $stationId = 12; // Set the correct station_id value
             $data = $this->db->table('teachers')
-                ->join('teachingassignments', 'teachingassignments.Teacher_ID = teachers.Teacher_ID')
-                ->join('users', 'teachers.User_ID = users.User_ID')
-                ->join('courses', 'teachingassignments.course_id = courses.Course_ID')
+                ->join('teachingassignments', 'teachingassignments.Teacher_ID = teachers.Teacher_ID', 'left') // Change to LEFT JOIN
+                ->join('users', 'teachers.User_ID = users.User_ID') // Assuming all teachers are users, keep INNER JOIN
+                ->join('courses', 'teachingassignments.course_id = courses.Course_ID', 'left') // Change to LEFT JOIN
                 ->where('users.IsVerified', 1) // Add condition for IsVerified
                 ->where('teachingassignments.station_id', (int) $stationId) // Add condition for Station_ID
                 ->get()
@@ -318,6 +317,7 @@ class StationAdminController extends BaseController
             return $this->failServerError('Internal Server Error');
         }
     }
+
 
 
     public function getStationCoursesWithStudentsAndTeachers()
